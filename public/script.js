@@ -57,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (form) form.addEventListener('submit', handleNameChange);
 });
 
+//Footer laden
 document.addEventListener('DOMContentLoaded', function() {
     fetch('footer.html') // Pfad zu deiner Footer-Datei anpassen
         .then(response => response.text())
