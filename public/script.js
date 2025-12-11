@@ -1,4 +1,4 @@
-// Simulierter "Server-Abruf" (da wir noch kein echtes Backend haben)
+// Simulierter Server-Abruf
 async function mockFetchProfile() {
     return new Promise((resolve) => {
         setTimeout(() => {
@@ -6,68 +6,53 @@ async function mockFetchProfile() {
                 name: "Kevin (Aus Datenbank)",
                 email: "kevin@firma.de"
             });
-        }, 1000); // Simuliert 1 Sekunde Ladezeit
+        }, 800); 
     });
 }
 
-// 1. Daten laden und anzeigen
+// Profil laden
 async function loadProfile() {
     const nameElement = document.getElementById('profile-name');
     const emailElement = document.getElementById('profile-email');
 
-    // Zeige zuerst "Laden..." an
-    if(nameElement) nameElement.textContent = "Lade Daten...";
-    
-    try {
-        // Hier würden wir normalerweise fetch('/users/me') machen
-        // Stattdessen nutzen wir unsere Mock-Funktion:
-        const data = await mockFetchProfile();
+    // Sicherheitscheck: Sind wir überhaupt auf der Profilseite?
+    if (!nameElement || !emailElement) return; 
 
-        // Daten ins HTML schreiben
-        if(nameElement) nameElement.textContent = data.name;
-        if(emailElement) emailElement.textContent = data.email;
-        
+    try {
+        const data = await mockFetchProfile();
+        nameElement.textContent = data.name;
+        emailElement.textContent = data.email;
     } catch (error) {
-        console.error("Fehler beim Laden:", error);
+        console.error("Fehler:", error);
     }
 }
 
-// 2. Logout Funktion
 function logout() {
-    // Token löschen (Simulation)
     localStorage.removeItem('token');
-    alert("Sie wurden ausgeloggt! (Redirect zum Login)");
-    // window.location.href = 'login.html'; // Später aktivieren
+    alert("Ausgeloggt! Weiterleitung zur Startseite.");
+    window.location.href = 'index.html'; // Leitet zurück zur Startseite
 }
 
-// 3. Namen ändern (Formular)
 function handleNameChange(event) {
-    event.preventDefault(); // Verhindert Seite-Neuladen
+    event.preventDefault();
     const input = document.getElementById('new-name-input');
     const nameDisplay = document.getElementById('profile-name');
     
-    if (input.value) {
-        // Update der Anzeige
+    if (input && input.value) {
         nameDisplay.textContent = input.value;
-        alert(`Name erfolgreich zu "${input.value}" geändert!`);
-        input.value = ''; // Feld leeren
+        alert("Name geändert!");
+        input.value = '';
     }
 }
 
-// Starten, sobald die Seite geladen ist
+// Event Listener beim Start
 document.addEventListener('DOMContentLoaded', () => {
-    // Profil laden starten
+    // Versuche Profil zu laden (passiert nur auf profile.html)
     loadProfile();
 
-    // Logout Button verknüpfen
     const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', logout);
-    }
+    if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
-    // Formular verknüpfen
     const form = document.getElementById('update-name-form');
-    if (form) {
-        form.addEventListener('submit', handleNameChange);
-    }
-}); 
+    if (form) form.addEventListener('submit', handleNameChange);
+});
