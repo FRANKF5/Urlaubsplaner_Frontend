@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urlaubspalner - Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Willkommen zurück!</h1>
+        <form id="loginForm">
+            <div class="mb-3">
+                <label for="username" class="form-label">Benutzername</label>
+                <input type="text" class="form-control" id="username" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Passwort</label>
+                <input type="password" class="form-control" id="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Einloggen</button>
+        </form>
+        <div id="errorMessage" class="alert alert-danger mt-3" style="display:none;"></div>
+    </div>
+    
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+
+            // Hier sollte die Authentifizierung erfolgen
+            if (username === 'admin' && password === 'password') {
+                window.location.href = 'dashboard.html';
+            } else {
+                var errorMessage = document.getElementById('errorMessage');
+                errorMessage.textContent = 'Ungültiger Benutzername oder Passwort.';
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
+
+    <div class="footer-placeholder"></div>
+    <script src="script.js"></script>
+</body>
+</html>

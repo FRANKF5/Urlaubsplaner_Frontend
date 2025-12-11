@@ -56,3 +56,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('update-name-form');
     if (form) form.addEventListener('submit', handleNameChange);
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('footer.html') // Pfad zu deiner Footer-Datei anpassen
+        .then(response => response.text())
+        .then(html => {
+            // Finde alle Elemente, die einen Footer benötigen (z.B. mit einer Klasse)
+            document.querySelectorAll('.footer-placeholder').forEach(placeholder => {
+                placeholder.innerHTML = html;
+            });
+        })
+        .catch(error => console.error('Fehler beim Laden des Footers:', error));
+});
