@@ -3,25 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Urlaubsplaner - Mein Profil</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.3.8/cerulean/bootstrap.min.css">
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="mb-4">Urlaubsplaner</h1>
-        <p class="lead">Welcome to your vacation planner application.</p>
+    
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Urlaubsplaner</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 class="mb-4">Willkommen!</h1>
+        <p class="lead">Dies ist die Profilansicht (Frontend-Test).</p>
         
-        <div class="btn-group" role="group">
-            <button type="button" class="btn btn-primary">Primary</button>
-            <button type="button" class="btn btn-secondary">Secondary</button>
-            <button type="button" class="btn btn-success">Success</button>
-            <button type="button" class="btn btn-danger">Danger</button>
+        <div id="profile-section" class="card mt-4">
+            <div class="card-header bg-secondary text-white">
+                <h3 class="card-title h5 mb-0">Mein Profil</h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <p><strong>Name:</strong> <span id="profile-name">Max Mustermann (Test)</span></p>
+                    <p><strong>Email:</strong> <span id="profile-email">max@beispiel.de (Test)</span></p>
+                </div>
+                
+                <hr>
+                
+                <label class="form-label">Namen ändern:</label>
+                <form id="update-name-form" class="mb-3">
+                    <div class="input-group">
+                        <input type="text" id="new-name-input" class="form-control" placeholder="Neuer Name eingeben">
+                        <button class="btn btn-outline-primary" type="submit">Speichern</button>
+                    </div>
+                </form>
+
+                <button id="logout-btn" class="btn btn-danger mt-2">Logout</button>
+            </div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
-</body>
-<body>
-
+    
+    <script src="script.js"></script>
 </body>
 </html>
