@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mein Profil</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.3.8/cerulean/bootstrap.min.css">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">Urlaubsplaner</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link active" href="profile.html">Profil</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card border-primary mb-3" style="max-width: 40rem; margin: auto;">
+            <div class="card-header">Mein Profil</div>
+            <div class="card-body">
+                <h4 class="card-title" id="profile-name">Lade Daten...</h4>
+                <p class="card-text text-muted" id="profile-email">Bitte warten...</p>
+                
+                <hr>
+                
+                <form id="update-name-form" class="mt-4">
+                    <label class="form-label">Namen ändern:</label>
+                    <div class="input-group mb-3">
+                        <input type="text" id="new-name-input" class="form-control" placeholder="Neuer Name">
+                        <button class="btn btn-outline-primary" type="submit">Speichern</button>
+                    </div>
+                </form>
+
+                <button id="logout-btn" class="btn btn-danger w-100 mt-3">Logout</button>
+            </div>
+        </div>
+        
+        <div class="text-center mt-3">
+            <a href="index.html" class="text-decoration-none">&larr; Zurück zur Startseite</a>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
