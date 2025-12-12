@@ -46,32 +46,12 @@ function handleNameChange(event) {
 }
 
 
-document.addEventListener('readystatechange', () => {
-    
-    // Runs very early
-    
-    
-});
-
-
 // Initialisierung beim Laden der Seite
 document.addEventListener('DOMContentLoaded', function() {
     
-    // Footer laden
-    fetch('footer.html') 
-        .then(response => response.text())
-        .then(html => {
-            // Finde alle Elemente, die einen Footer benötigen (z.B. mit einer Klasse)
-            document.querySelectorAll('.footer-placeholder').forEach(placeholder => {
-                placeholder.innerHTML = html;
-            });
-        })
-        .catch(error => console.error('Fehler beim Laden des Footers:', error));
-
-
     // Versuche Profil zu laden (passiert nur auf profile.html)
     loadProfile();
-
+    
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
@@ -79,3 +59,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (form) form.addEventListener('submit', handleNameChange);
 });
 
+
+document.addEventListener('DOMContentLoaded', () => {
+    const footerPlaceholder = document.querySelector('.footer-placeholder');
+    fetch('footer.html')
+        .then(response => response.text())
+        .then(data => {
+            footerPlaceholder.innerHTML = data;
+        })
+        .catch(error => console.error('Error loading footer:', error));
+});
