@@ -201,6 +201,9 @@
 }
 
 body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
   margin: 0;
   font-family: var(--bs-body-font-family);
   font-size: var(--bs-body-font-size);
@@ -214,6 +217,10 @@ body {
   min-width: 256px;
 }
 
+html {
+            scroll-behavior: smooth;
+            height: 100%;
+        }
 hr {
   margin: 1rem 0;
   color: inherit;
@@ -12336,4 +12343,71 @@ textarea.form-control-lg {
 
 .badge.bg-secondary, .badge.bg-light {
   color: #343a40;
+}
+
+/* Modern background styling */
+.modern-background {
+  background: linear-gradient(180deg, #f5f5f5 0%, #e8e8e8 100%);
+  background-attachment: fixed;
+}
+
+.modern-background::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.5) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Fade-in animation for elements */
+.fade-in-element {
+  opacity: 0;
+  animation: fadeInUp 0.8s ease-out 0.2s forwards;
+  transition: transform 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Smooth transitions for interactive elements */
+.nav-link {
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+  transform: translateY(-2px);
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Enhance jumbotron styling */
+.jumbotron {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 3rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Footer with reversed navbar gradient */
+footer.bg-primary {
+  background-image: none !important;
+  background-color: #2fa4e7 !important;
+}
+.footer-placeholder {
+            margin-top: auto;
 }

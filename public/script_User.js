@@ -58,14 +58,3 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('update-name-form');
     if (form) form.addEventListener('submit', handleNameChange);
 });
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    const footerPlaceholder = document.querySelector('.footer-placeholder');
-    fetch('footer.html')
-        .then(response => response.text())
-        .then(data => {
-            footerPlaceholder.innerHTML = data;
-        })
-        .catch(error => console.error('Error loading footer:', error));
-});
