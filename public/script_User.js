@@ -63,3 +63,58 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('update-name-form');
     if (form) form.addEventListener('submit', handleNameChange);
 });
+
+
+//Funktion für Registrierungsseite
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('birthdate');
+    
+    // 1. Heutiges Datum ermitteln
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // Monat ist 0-basiert, daher +1
+    const day = String(today.getDate()).padStart(2, '0');
+    
+    // Format für HTML input date ist immer: YYYY-MM-DD
+    const maxDate = `${year}-${month}-${day}`;
+    
+    // 2. Minimales Datum ermitteln (Vor 150 Jahren)
+    const minYear = year - 125;
+    const minDate = `${minYear}-${month}-${day}`;
+
+    // 3. Attribute setzen
+    dateInput.max = maxDate; // Niemand aus der Zukunft
+    dateInput.min = minDate; // Niemand älter als 150 Jahre
+
+    //PAsswortmatch Listener
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+});
+
+//Check if Password an Confirm Password match
+function validatePasswordMatch() {
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    const errorMessage = document.getElementById('passwordError');
+    
+    if (password !== confirmPassword && confirmPassword.length > 0) {
+        errorMessage.style.display = 'block';
+        return false;
+    } else {
+        errorMessage.style.display = 'none';
+        return true;
+    }
+}
+
+// Function to validate entire form
+function validateForm(event) {
+    event.preventDefault();
+    
+    if (!validatePasswordMatch()) {
+        alert('Passwörter stimmen nicht überein!');
+        return false;
+    }
+    
+    alert('Daten sind valide und werden (simuliert) gesendet!');
+    return false;
+}
