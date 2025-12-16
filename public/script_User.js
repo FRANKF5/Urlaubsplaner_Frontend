@@ -1,3 +1,8 @@
+/*
+This script contains functions for user profile management, including loading profile data,
+logging out, and updating the user's name.
+*/
+
 // Simulierter Server-Abruf
 async function mockFetchProfile() {
     return new Promise((resolve) => {
