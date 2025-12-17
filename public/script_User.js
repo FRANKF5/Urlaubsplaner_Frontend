@@ -1,65 +1,44 @@
-/*
-This script contains functions for user profile management, including loading profile data,
-logging out, and updating the user's name.
+/* script_User.js
+   SIMULIERTES BACKEND FÜR DAS FRONTEND-TEAM
+   Nutzt localStorage, um Daten zwischen den HTML-Seiten zu speichern.
 */
 
-// Simulierter Server-Abruf
-async function mockFetchProfile() {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve({
-                name: "Kevin (Aus Datenbank)",
-                email: "kevin@firma.de"
-            });
-        }, 800); 
-    });
+// --- HILFSFUNKTIONEN (MOCK DATABASE) ---
+
+// Simuliert das Speichern eines Users in der Datenbank
+function saveUserToDB(user) {
+    // Hole alle existierenden User oder erstelle leere Liste
+    let users = JSON.parse(localStorage.getItem('mock_users_db')) || [];
+    users.push(user);
+    localStorage.setItem('mock_users_db', JSON.stringify(users));
 }
 
-// Profil laden
-async function loadProfile() {
-    const nameElement = document.getElementById('profile-name');
-    const emailElement = document.getElementById('profile-email');
-
-    // Sicherheitscheck: Sind wir überhaupt auf der Profilseite?
-    if (!nameElement || !emailElement) return; 
-
-    try {
-        const data = await mockFetchProfile();
-        nameElement.textContent = data.name;
-        emailElement.textContent = data.email;
-    } catch (error) {
-        console.error("Fehler:", error);
-    }
+// Simuliert die Suche nach einem User in der Datenbank
+function findUserInDB(username, password) {
+    let users = JSON.parse(localStorage.getItem('mock_users_db')) || [];
+    // Sucht User, wo Name UND Passwort übereinstimmen
+    return users.find(u => u.username === username && u.password === password);
 }
 
-function logout() {
-    localStorage.removeItem('token');
-    alert("Ausgeloggt! Weiterleitung zur Startseite.");
-    window.location.href = 'index.html'; // Leitet zurück zur Startseite
+// Prüft, ob der Username schon vergeben ist
+function userExists(username) {
+    let users = JSON.parse(localStorage.getItem('mock_users_db')) || [];
+    return users.some(u => u.username === username);
 }
 
-function handleNameChange(event) {
-    event.preventDefault();
-    const input = document.getElementById('new-name-input');
-    const nameDisplay = document.getElementById('profile-name');
-    
-    if (input && input.value) {
-        nameDisplay.textContent = input.value;
-        alert("Name geändert!");
-        input.value = '';
-    }
-}
+// --- HAUPTFUNKTIONEN FÜR DIE SEITEN ---
 
+// 1. REGISTRIERUNG (wird in user_registration.html genutzt)
+function registerUser(event) {
+    event.preventDefault(); // Verhindert Neuladen
 
-// Initialisierung beim Laden der Seite
-document.addEventListener('DOMContentLoaded', function() {
-    
-    // Versuche Profil zu laden (passiert nur auf profile.html)
-    loadProfile();
-    
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) logoutBtn.addEventListener('click', logout);
+    const usernameInput = document.getElementById('username').value;
+    const emailInput = document.getElementById('email').value;
+    const passwordInput = document.getElementById('password').value;
+    const confirmInput = document.getElementById('confirm_password').value;
+    const birthdateInput = document.getElementById('birthdate').value;
 
+<<<<<<< HEAD
     const form = document.getElementById('update-name-form');
     if (form) form.addEventListener('submit', handleNameChange);
 });
@@ -112,12 +91,36 @@ function validateForm(event) {
     
     if (!validatePasswordMatch()) {
         alert('Passwörter stimmen nicht überein!');
+=======
+    // Validierung: Passwörter
+    if (passwordInput !== confirmInput) {
+        document.getElementById('passwordError').style.display = 'block';
+>>>>>>> e249f7a77e3b05691665899b0cb72cd9dcaa6b02
         return false;
     }
-    
-    alert('Daten sind valide und werden (simuliert) gesendet!');
+
+    // Validierung: Existiert der User schon?
+    if (userExists(usernameInput)) {
+        alert("Dieser Benutzername ist leider schon vergeben.");
+        return false;
+    }
+
+    // User Objekt erstellen
+    const newUser = {
+        username: usernameInput,
+        email: emailInput,
+        password: passwordInput, // Hinweis: Im echten Backend niemals Klartext speichern!
+        birthdate: birthdateInput
+    };
+
+    // Speichern (Mock)
+    saveUserToDB(newUser);
+
+    alert("Konto erfolgreich erstellt! Du wirst zum Login weitergeleitet.");
+    window.location.href = 'login.html';
     return false;
 }
+<<<<<<< HEAD
 //Function to check if password and confirm_password match
 document.getElementById('loginForm').addEventListener('submit', function(event) {
     event.preventDefault();
@@ -132,5 +135,84 @@ document.getElementById('loginForm').addEventListener('submit', function(event) 
         var errorMessage = document.getElementById('errorMessage');
         errorMessage.textContent = 'Ungültiger Benutzername oder Passwort.';
         errorMessage.style.display = 'block';
+=======
+
+// 2. LOGIN (wird in login.html genutzt)
+function loginUser(event) {
+    event.preventDefault();
+
+    const usernameInput = document.getElementById('username').value;
+    const passwordInput = document.getElementById('password').value;
+    const errorBox = document.getElementById('errorMessage');
+
+    // Suchen in der Mock-DB
+    const foundUser = findUserInDB(usernameInput, passwordInput);
+
+    if (foundUser) {
+        // ERFOLG: Wir speichern den "aktuellen User" in der Session
+        // Das simuliert das eingeloggte Cookie
+        localStorage.setItem('current_session_user', JSON.stringify(foundUser));
+        
+        window.location.href = 'profile.html';
+    } else {
+        // FEHLER
+        if(errorBox) {
+            errorBox.textContent = "Benutzername oder Passwort falsch.";
+            errorBox.style.display = 'block';
+        } else {
+            alert("Login fehlgeschlagen.");
+        }
+    }
+}
+
+// 3. PROFIL LADEN (wird in profile.html genutzt)
+function loadProfile() {
+    const nameDisplay = document.getElementById('profile-name');
+    const emailDisplay = document.getElementById('profile-email');
+
+    // Nur ausführen, wenn wir auf der Profilseite sind
+    if (!nameDisplay) return;
+
+    // Prüfen, wer eingeloggt ist
+    const currentUser = JSON.parse(localStorage.getItem('current_session_user'));
+
+    if (currentUser) {
+        nameDisplay.textContent = currentUser.username;
+        emailDisplay.textContent = currentUser.email;
+    } else {
+        // Niemand eingeloggt? Rauswerfen!
+        alert("Bitte erst einloggen.");
+        window.location.href = 'login.html';
+    }
+}
+
+// 4. LOGOUT
+function logout() {
+    localStorage.removeItem('current_session_user');
+    window.location.href = 'index.html';
+}
+
+// --- INITIALISIERUNG BEIM LADEN ---
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // Prüfen, ob wir Profil laden müssen
+    loadProfile();
+
+    // Event Listener für Logout Button (falls vorhanden)
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+    }
+
+    // Datums-Grenzen setzen (dein bestehender Code)
+    const dateInput = document.getElementById('birthdate');
+    if(dateInput) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        dateInput.max = `${year}-${month}-${day}`;
+        dateInput.min = `${year - 125}-${month}-${day}`;
+>>>>>>> e249f7a77e3b05691665899b0cb72cd9dcaa6b02
     }
 });
