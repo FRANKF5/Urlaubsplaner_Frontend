@@ -56,6 +56,16 @@
                 <form id="registrationForm" onsubmit="return registerUser(event)">
                     
                     <div class="form-group mb-3">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="firstname" class="form-label fw-bold">Vorname</label>
+                                <input type="text" class="form-control" id="firstname" placeholder="Max" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="lastname" class="form-label fw-bold">Nachname</label>
+                                <input type="text" class="form-control" id="lastname" placeholder="Mustermann" required>
+                            </div>
+                        </div>
                         <label for="username" class="form-label fw-bold">Benutzername</label>
                         <input type="text" class="form-control" id="username" placeholder="Dein Spitzname" required>
                     </div>
