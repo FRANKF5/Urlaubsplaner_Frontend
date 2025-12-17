@@ -68,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
 //Funktion für Registrierungsseite
 document.addEventListener('DOMContentLoaded', function() {
     const dateInput = document.getElementById('birthdate');
+    if (!dateInput) return; // Nur ausführen, wenn wir auf der Registrierungsseite sind
     
     // 1. Heutiges Datum ermitteln
     const today = new Date();
@@ -86,9 +87,11 @@ document.addEventListener('DOMContentLoaded', function() {
     dateInput.max = maxDate; // Niemand aus der Zukunft
     dateInput.min = minDate; // Niemand älter als 150 Jahre
 
-    //PAsswortmatch Listener
+    //Passwortmatch Listener
     const confirmPasswordInput = document.getElementById('confirm_password');
-    confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+    if(confirmPasswordInput) {
+        confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+    }
 });
 
 //Check if Password an Confirm Password match
@@ -115,6 +118,8 @@ function validateForm(event) {
         return false;
     }
     
-    alert('Daten sind valide und werden (simuliert) gesendet!');
-    return false;
+    // Frontend Simulation:
+    alert('Registrierung erfolgreich! Sie werden zum Profil weitergeleitet.');
+    window.location.href = 'profile.html'; // Weiterleitung
+    return false; // Verhindert das echte Absenden des Formulars
 }

@@ -1,22 +1,13 @@
 <!DOCTYPE html>
-<!--  Profilseite für den Urlaubsplaner
-      Zeigt Benutzerdaten an und ermöglicht das Ändern einiger Daten
-      sowie das Logout.
-
--->
-
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mein Profil</title>
-    <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.3.8/cerulean/bootstrap.min.css">
-    -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="modern-background">
 
-    <!-- Navigationsleiste oben-->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-5 sticky-top" style="box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <div class="container-fluid">
             <a class="navbar-brand" href="index.html">Urlaubsplaner</a>
@@ -27,6 +18,13 @@
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="user_registration.html">Registrieren</a>
+                    </li>
+                    <li class="nav-item border-start mx-2 d-none d-lg-block"></li>
                     <li class="nav-item">
                         <a class="nav-link active" href="profile.html">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle me-1" viewBox="0 0 16 16">
@@ -67,7 +65,6 @@
         </div>
     </div>
     
-    <!--Fußzeile: wird über .EventListener('DOMContentLoaded') aus footer.html geladen-->
     <div class="footer-placeholder"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
