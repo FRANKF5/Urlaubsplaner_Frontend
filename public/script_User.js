@@ -1,36 +1,53 @@
 /* script_User.js
    Zentrale Steuerung für Login, Registrierung und Profil
-   MIT VORNAME UND NACHNAME
+   Kommunikation mit REST API über Fetch
 */
+
+// API Base URL - Anpassen falls nötig
+const API_BASE_URL = 'http://localhost:3000/api';
 
 // --- HILFSFUNKTIONEN ---
 
-function saveUserToDB(user) {
-    let users = JSON.parse(localStorage.getItem('users_db')) || [];
-    users.push(user);
-    localStorage.setItem('users_db', JSON.stringify(users));
+function showAlert(message) {
+    alert(message);
 }
 
-function findUser(username, password) {
-    let users = JSON.parse(localStorage.getItem('users_db')) || [];
-    return users.find(u => u.username === username && u.password === password);
-}
+async function apiCall(endpoint, method = 'GET', body = null) {
+    const options = {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
+        }
+    };
 
-function userExists(username) {
-    let users = JSON.parse(localStorage.getItem('users_db')) || [];
-    return users.some(u => u.username === username);
+    if (body) {
+        options.body = JSON.stringify(body);
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || `API Error: ${response.status}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('API Call Error:', error);
+        throw error;
+    }
 }
 
 // --- HAUPTFUNKTIONEN ---
 
 // 1. REGISTRIERUNG
-function registerUser(event) {
+async function registerUser(event) {
     event.preventDefault();
 
-    // NEU: Vorname und Nachname holen
-    const firstname = document.getElementById('firstname').value;
-    const lastname = document.getElementById('lastname').value;
-    
+    const firstname = document.getElementById('firstname')?.value || '';
+    const lastname = document.getElementById('lastname')?.value || '';
     const username = document.getElementById('username').value;
     const email = document.getElementById('email').value;
     const birthdate = document.getElementById('birthdate').value;
@@ -38,81 +55,107 @@ function registerUser(event) {
     const confirm = document.getElementById('confirm_password').value;
 
     if (password !== confirm) {
-        document.getElementById('passwordError').style.display = 'block';
-        return false;
-    }
-    if (userExists(username)) {
-        showAlert("Benutzername ist bereits vergeben!");
+        const errorElement = document.getElementById('passwordError');
+        if (errorElement) errorElement.style.display = 'block';
         return false;
     }
 
-    // NEU: firstname und lastname mit speichern
-    const newUser = { 
-        firstname, 
-        lastname, 
-        username, 
-        email, 
-        birthdate, 
-        password 
-    };
-    
-    saveUserToDB(newUser);
+    try {
+        const response = await apiCall('/auth/register', 'POST', {
+            firstname,
+            lastname,
+            username,
+            email,
+            birthdate,
+            password
+        });
 
-    showAlert("Erfolgreich registriert! Bitte jetzt einloggen.");
-    window.location.href = 'login.html';
+        showAlert("Erfolgreich registriert! Bitte jetzt einloggen.");
+        window.location.href = 'login.html';
+    } catch (error) {
+        showAlert(`Registrierung fehlgeschlagen: ${error.message}`);
+    }
     return false;
 }
 
 // 2. LOGIN
-function loginUser(event) {
+async function loginUser(event) {
     event.preventDefault();
 
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     const errorBox = document.getElementById('errorMessage');
 
-    const user = findUser(username, password);
+    try {
+        const response = await apiCall('/auth/login', 'POST', {
+            username,
+            password
+        });
 
-    if (user) {
-        localStorage.setItem('current_user', JSON.stringify(user));
+        // Token speichern
+        localStorage.setItem('auth_token', response.token);
+        localStorage.setItem('current_user', JSON.stringify(response.user));
+        
         window.location.href = 'profile.html';
-    } else {
+    } catch (error) {
         if (errorBox) {
-            errorBox.textContent = "Falscher Benutzername oder Passwort.";
+            errorBox.textContent = error.message || "Falscher Benutzername oder Passwort.";
             errorBox.style.display = 'block';
         } else {
-            showAlert("Login fehlgeschlagen!");
+            showAlert(error.message || "Login fehlgeschlagen!");
+        }
+    }
+    return false;
+}
+
+// 3. PROFIL ANZEIGEN
+async function loadProfile() {
+    const nameField = document.getElementById('profile-name');
+    if (!nameField) return;
+
+    try {
+        const response = await apiCall('/user/profile', 'GET');
+        
+        // Speichern für lokale Nutzung
+        localStorage.setItem('current_user', JSON.stringify(response.user));
+
+        nameField.innerHTML = `${response.user.firstname} ${response.user.lastname} <small class="text-muted">(${response.user.username})</small>`;
+        
+        const emailField = document.getElementById('profile-email');
+        if (emailField) {
+            emailField.textContent = response.user.email;
+        }
+    } catch (error) {
+        const currentUser = JSON.parse(localStorage.getItem('current_user'));
+        
+        if (currentUser) {
+            nameField.innerHTML = `${currentUser.firstname} ${currentUser.lastname} <small class="text-muted">(${currentUser.username})</small>`;
+            const emailField = document.getElementById('profile-email');
+            if (emailField) {
+                emailField.textContent = currentUser.email;
+            }
+        } else {
+            showAlert("Bitte erst einloggen.");
+            window.location.href = 'login.html';
         }
     }
 }
 
-// 3. PROFIL ANZEIGEN
-function loadProfile() {
-    const nameField = document.getElementById('profile-name');
-    if (!nameField) return; 
-
-    const currentUser = JSON.parse(localStorage.getItem('current_user'));
-
-    if (currentUser) {
-        // NEU: Wir zeigen jetzt "Vorname Nachname" anstatt nur Username
-        // Der Username wird klein in Klammern dahinter gesetzt
-        nameField.innerHTML = `${currentUser.firstname} ${currentUser.lastname} <small class="text-muted">(${currentUser.username})</small>`;
-        
-        document.getElementById('profile-email').textContent = currentUser.email;
-    } else {
-        showAlert("Bitte erst einloggen.");
-        window.location.href = 'login.html';
-    }
-}
-
 // 4. LOGOUT
-function logout() {
+async function logout() {
+    try {
+        await apiCall('/auth/logout', 'POST');
+    } catch (error) {
+        console.error('Logout error:', error);
+    }
+    
+    localStorage.removeItem('auth_token');
     localStorage.removeItem('current_user');
     window.location.href = 'index.html';
 }
 
-// 5. NAMEN ÄNDERN (Neu)
-function updateName(event) {
+// 5. NAMEN ÄNDERN
+async function updateName(event) {
     event.preventDefault();
 
     const newFirstname = document.getElementById('edit-firstname').value;
@@ -123,46 +166,38 @@ function updateName(event) {
         return;
     }
 
-    // 1. Aktuellen User holen
-    let currentUser = JSON.parse(localStorage.getItem('current_user'));
-    
-    // 2. Werte ändern
-    currentUser.firstname = newFirstname;
-    currentUser.lastname = newLastname;
+    try {
+        const response = await apiCall('/user/profile', 'PUT', {
+            firstname: newFirstname,
+            lastname: newLastname
+        });
 
-    // 3. Im "Session"-Speicher aktualisieren
-    localStorage.setItem('current_user', JSON.stringify(currentUser));
-
-    // 4. In der Haupt-Datenbank suchen und auch dort aktualisieren
-    // (Sonst sind die alten Namen beim nächsten Login wieder da)
-    let users = JSON.parse(localStorage.getItem('users_db')) || [];
-    const index = users.findIndex(u => u.username === currentUser.username);
-    if (index !== -1) {
-        users[index].firstname = newFirstname;
-        users[index].lastname = newLastname;
-        localStorage.setItem('users_db', JSON.stringify(users));
+        localStorage.setItem('current_user', JSON.stringify(response.user));
+        loadProfile();
+        showAlert("Namen erfolgreich geändert!");
+        
+        document.getElementById('edit-firstname').value = "";
+        document.getElementById('edit-lastname').value = "";
+    } catch (error) {
+        showAlert(`Fehler beim Ändern der Namen: ${error.message}`);
     }
-
-    // 5. Profil neu laden (damit man die Änderung sofort sieht)
-    loadProfile();
-    showAlert("Namen erfolgreich geändert!");
-    
-    // Felder leeren
-    document.getElementById('edit-firstname').value = "";
-    document.getElementById('edit-lastname').value = "";
 }
-
 
 // --- INIT ---
 document.addEventListener('DOMContentLoaded', () => {
+    // Prüfen ob User angemeldet ist (Token vorhanden)
+    const token = localStorage.getItem('auth_token');
+    
     // Profil laden
-    loadProfile();
+    if (token) {
+        loadProfile();
+    }
 
     // Logout Button
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
-    // NEU: Update Formular aktivieren
+    // Update Formular aktivieren
     const updateForm = document.getElementById('update-name-form');
     if (updateForm) {
         updateForm.addEventListener('submit', updateName);
