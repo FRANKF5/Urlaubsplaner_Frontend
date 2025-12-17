@@ -1,115 +1,102 @@
 /* script_User.js
-   SIMULIERTES BACKEND FÜR DAS FRONTEND-TEAM
-   Nutzt localStorage, um Daten zwischen den HTML-Seiten zu speichern.
+   Zentrale Steuerung für Login, Registrierung und Profil
+   Nutzt LocalStorage als "Datenbank".
 */
 
-// --- HILFSFUNKTIONEN (MOCK DATABASE) ---
+// --- HILFSFUNKTIONEN ---
 
-// Simuliert das Speichern eines Users in der Datenbank
+// User in "Datenbank" speichern
 function saveUserToDB(user) {
-    // Hole alle existierenden User oder erstelle leere Liste
-    let users = JSON.parse(localStorage.getItem('mock_users_db')) || [];
+    let users = JSON.parse(localStorage.getItem('users_db')) || [];
     users.push(user);
-    localStorage.setItem('mock_users_db', JSON.stringify(users));
+    localStorage.setItem('users_db', JSON.stringify(users));
 }
 
-// Simuliert die Suche nach einem User in der Datenbank
-function findUserInDB(username, password) {
-    let users = JSON.parse(localStorage.getItem('mock_users_db')) || [];
-    // Sucht User, wo Name UND Passwort übereinstimmen
+// User finden (für Login)
+function findUser(username, password) {
+    let users = JSON.parse(localStorage.getItem('users_db')) || [];
     return users.find(u => u.username === username && u.password === password);
 }
 
-// Prüft, ob der Username schon vergeben ist
+// Prüfen ob Username existiert (für Registrierung)
 function userExists(username) {
-    let users = JSON.parse(localStorage.getItem('mock_users_db')) || [];
+    let users = JSON.parse(localStorage.getItem('users_db')) || [];
     return users.some(u => u.username === username);
 }
 
-// --- HAUPTFUNKTIONEN FÜR DIE SEITEN ---
+// --- HAUPTFUNKTIONEN ---
 
-// 1. REGISTRIERUNG (wird in user_registration.html genutzt)
+// 1. REGISTRIERUNG
 function registerUser(event) {
-    event.preventDefault(); // Verhindert Neuladen
+    event.preventDefault(); // Stoppt das normale Absenden
 
-    const usernameInput = document.getElementById('username').value;
-    const emailInput = document.getElementById('email').value;
-    const passwordInput = document.getElementById('password').value;
-    const confirmInput = document.getElementById('confirm_password').value;
-    const birthdateInput = document.getElementById('birthdate').value;
+    // Daten aus dem Formular holen
+    const username = document.getElementById('username').value;
+    const email = document.getElementById('email').value;
+    const birthdate = document.getElementById('birthdate').value;
+    const password = document.getElementById('password').value;
+    const confirm = document.getElementById('confirm_password').value;
 
-    // Validierung: Passwörter
-    if (passwordInput !== confirmInput) {
+    // Prüfungen
+    if (password !== confirm) {
         document.getElementById('passwordError').style.display = 'block';
         return false;
     }
-
-    // Validierung: Existiert der User schon?
-    if (userExists(usernameInput)) {
-        alert("Dieser Benutzername ist leider schon vergeben.");
+    if (userExists(username)) {
+        alert("Benutzername ist bereits vergeben!");
         return false;
     }
 
-    // User Objekt erstellen
-    const newUser = {
-        username: usernameInput,
-        email: emailInput,
-        password: passwordInput, // Hinweis: Im echten Backend niemals Klartext speichern!
-        birthdate: birthdateInput
-    };
-
-    // Speichern (Mock)
+    // Speichern
+    const newUser = { username, email, birthdate, password };
     saveUserToDB(newUser);
 
-    alert("Konto erfolgreich erstellt! Du wirst zum Login weitergeleitet.");
+    alert("Erfolgreich registriert! Bitte jetzt einloggen.");
     window.location.href = 'login.html';
     return false;
 }
 
-// 2. LOGIN (wird in login.html genutzt)
+// 2. LOGIN
 function loginUser(event) {
     event.preventDefault();
 
-    const usernameInput = document.getElementById('username').value;
-    const passwordInput = document.getElementById('password').value;
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
     const errorBox = document.getElementById('errorMessage');
 
-    // Suchen in der Mock-DB
-    const foundUser = findUserInDB(usernameInput, passwordInput);
+    const user = findUser(username, password);
 
-    if (foundUser) {
-        // ERFOLG: Wir speichern den "aktuellen User" in der Session
-        // Das simuliert das eingeloggte Cookie
-        localStorage.setItem('current_session_user', JSON.stringify(foundUser));
-        
+    if (user) {
+        // Session starten (User merken)
+        localStorage.setItem('current_user', JSON.stringify(user));
         window.location.href = 'profile.html';
     } else {
-        // FEHLER
-        if(errorBox) {
-            errorBox.textContent = "Benutzername oder Passwort falsch.";
+        if (errorBox) {
+            errorBox.textContent = "Falscher Benutzername oder Passwort.";
             errorBox.style.display = 'block';
         } else {
-            alert("Login fehlgeschlagen.");
+            alert("Login fehlgeschlagen!");
         }
     }
 }
 
-// 3. PROFIL LADEN (wird in profile.html genutzt)
+// 3. PROFIL ANZEIGEN
 function loadProfile() {
-    const nameDisplay = document.getElementById('profile-name');
-    const emailDisplay = document.getElementById('profile-email');
+    // Nur machen, wenn wir auf der Profilseite sind
+    const nameField = document.getElementById('profile-name');
+    if (!nameField) return; 
 
-    // Nur ausführen, wenn wir auf der Profilseite sind
-    if (!nameDisplay) return;
-
-    // Prüfen, wer eingeloggt ist
-    const currentUser = JSON.parse(localStorage.getItem('current_session_user'));
+    const currentUser = JSON.parse(localStorage.getItem('current_user'));
 
     if (currentUser) {
-        nameDisplay.textContent = currentUser.username;
-        emailDisplay.textContent = currentUser.email;
+        // Daten in die HTML Elemente schreiben
+        document.getElementById('profile-name').textContent = currentUser.username;
+        document.getElementById('profile-email').textContent = currentUser.email;
+        
+        // Falls du das Geburtsdatum anzeigen willst, brauchst du ein Element mit id="profile-birthdate"
+        // document.getElementById('profile-birthdate').textContent = currentUser.birthdate;
     } else {
-        // Niemand eingeloggt? Rauswerfen!
+        // Nicht eingeloggt? Weg hier!
         alert("Bitte erst einloggen.");
         window.location.href = 'login.html';
     }
@@ -117,30 +104,23 @@ function loadProfile() {
 
 // 4. LOGOUT
 function logout() {
-    localStorage.removeItem('current_session_user');
+    localStorage.removeItem('current_user');
     window.location.href = 'index.html';
 }
 
-// --- INITIALISIERUNG BEIM LADEN ---
-document.addEventListener('DOMContentLoaded', function() {
-    
-    // Prüfen, ob wir Profil laden müssen
+// --- INIT (Startet automatisch) ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Prüft bei jedem Seitenaufruf, ob wir auf der Profilseite sind
     loadProfile();
 
-    // Event Listener für Logout Button (falls vorhanden)
+    // Logout Button aktivieren
     const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', logout);
-    }
-
-    // Datums-Grenzen setzen (dein bestehender Code)
+    if (logoutBtn) logoutBtn.addEventListener('click', logout);
+    
+    // Datums-Grenzen setzen (für Registrierung)
     const dateInput = document.getElementById('birthdate');
     if(dateInput) {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        dateInput.max = `${year}-${month}-${day}`;
-        dateInput.min = `${year - 125}-${month}-${day}`;
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.max = today;
     }
 });

@@ -39,29 +39,29 @@
     </nav>
 
     <div class="container">
-        <h1>Willkommen zurück!</h1>
-        <form id="loginForm" onsubmit="return loginUser(event)">
-            <div class="mb-3">
-                <label for="username" class="form-label">Benutzername</label>
-                <input type="text" class="form-control" id="username" required>
-            </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Passwort</label>
-                <input type="password" class="form-control" id="password" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Einloggen</button>
-            <div class="mt-3 text-center">
-            <small>Noch kein Konto? <a href="user_registration.html">Hier registrieren</a></small>
-            </div>
-        </form>
-        <div id="errorMessage" class="alert alert-danger mt-3" style="display:none;"></div>
-    </div>
+    <h1>Willkommen zurück!</h1>
     
+    <form id="loginForm" onsubmit="return loginUser(event)">
+        <div class="mb-3">
+            <label for="username" class="form-label">Benutzername</label>
+            <input type="text" class="form-control" id="username" required>
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Passwort</label>
+            <input type="password" class="form-control" id="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Einloggen</button>
+    </form>
+    
+    <div id="errorMessage" class="alert alert-danger mt-3" style="display:none;"></div>
+    
+    <div class="mt-3 text-center">
+        <small>Noch kein Konto? <a href="user_registration.html">Hier registrieren</a></small>
+    </div>
+</div>
 
-    <!--Fußzeile: wird über .EventListener('DOMContentLoaded') aus footer.html geladen-->
-    <div class="footer-placeholder"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
-    <script src="script_User.js"></script>
-    <script src="script_Effects.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+<script src="script_User.js"></script>
+<script src="script_Effects.js"></script>
 </body>
 </html>
