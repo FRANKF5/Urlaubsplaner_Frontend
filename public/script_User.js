@@ -6,12 +6,6 @@
 // API Base URL - Anpassen falls nötig
 const API_BASE_URL = 'http://localhost:3000/api';
 
-// --- HILFSFUNKTIONEN ---
-
-function showAlert(message) {
-    alert(message);
-}
-
 async function apiCall(endpoint, method = 'GET', body = null) {
     const options = {
         method: method,
@@ -70,10 +64,10 @@ async function registerUser(event) {
             password
         });
 
-        showAlert("Erfolgreich registriert! Bitte jetzt einloggen.");
+        showAlert("Erfolgreich registriert! Bitte jetzt einloggen.", 'success');
         window.location.href = 'login.html';
     } catch (error) {
-        showAlert(`Registrierung fehlgeschlagen: ${error.message}`);
+        showAlert(`Registrierung fehlgeschlagen: ${error.message}`, 'danger');
     }
     return false;
 }
@@ -102,7 +96,7 @@ async function loginUser(event) {
             errorBox.textContent = error.message || "Falscher Benutzername oder Passwort.";
             errorBox.style.display = 'block';
         } else {
-            showAlert(error.message || "Login fehlgeschlagen!");
+            showAlert(error.message || "Login fehlgeschlagen!", 'danger');
         }
     }
     return false;
@@ -135,7 +129,7 @@ async function loadProfile() {
                 emailField.textContent = currentUser.email;
             }
         } else {
-            showAlert("Bitte erst einloggen.");
+            showAlert("Bitte erst einloggen.",'blue');
             window.location.href = 'login.html';
         }
     }
@@ -162,7 +156,7 @@ async function updateName(event) {
     const newLastname = document.getElementById('edit-lastname').value;
 
     if (!newFirstname || !newLastname) {
-        showAlert("Bitte beide Felder ausfüllen.");
+        showAlert("Bitte beide Felder ausfüllen.",'warning');
         return;
     }
 
@@ -174,12 +168,12 @@ async function updateName(event) {
 
         localStorage.setItem('current_user', JSON.stringify(response.user));
         loadProfile();
-        showAlert("Namen erfolgreich geändert!");
+        showAlert("Namen erfolgreich geändert!", 'success');
         
         document.getElementById('edit-firstname').value = "";
         document.getElementById('edit-lastname').value = "";
     } catch (error) {
-        showAlert(`Fehler beim Ändern der Namen: ${error.message}`);
+        showAlert(`Fehler beim Ändern der Namen: ${error.message}`, 'danger');
     }
 }
 

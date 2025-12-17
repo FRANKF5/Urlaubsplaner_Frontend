@@ -41,12 +41,14 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-//Eigene Alert Box
-function showAlert(message, duration = 3000) {
+function showAlert(message, type = 'blue', duration = 3000) {
   const alertDiv = document.createElement('div');
   alertDiv.classList.add('custom-alert');
-  alertDiv.textContent = message;
 
+  // Neue Klasse je nach Typ hinzufügen
+  alertDiv.classList.add(`custom-alert-${type}`);
+
+  alertDiv.textContent = message;
   document.body.appendChild(alertDiv);
 
   requestAnimationFrame(() => {

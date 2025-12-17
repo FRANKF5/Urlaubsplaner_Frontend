@@ -12491,3 +12491,20 @@ class wird durch eventlistener für alle class="skeleton" gesetzt */
   opacity: 1;
   transform: translateY(0);
 }
+/* Blaue Nachricht */
+.custom-alert-blue {
+  background-color: var(--bs-info);
+}
+
+/* Grüne Nachricht */
+.custom-alert-success {
+  background-color: var(--bs-success);
+}
+/* Gelbe Nachricht */
+.custom-alert-warning {
+  background-color: var(--bs-warning);
+}
+/* Rote Nachricht */
+.custom-alert-danger {
+  background-color: var(--bs-danger);
+}
