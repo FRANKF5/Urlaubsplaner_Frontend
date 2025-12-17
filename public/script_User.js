@@ -42,7 +42,7 @@ function registerUser(event) {
         return false;
     }
     if (userExists(username)) {
-        alert("Benutzername ist bereits vergeben!");
+        showAlert("Benutzername ist bereits vergeben!");
         return false;
     }
 
@@ -58,7 +58,7 @@ function registerUser(event) {
     
     saveUserToDB(newUser);
 
-    alert("Erfolgreich registriert! Bitte jetzt einloggen.");
+    showAlert("Erfolgreich registriert! Bitte jetzt einloggen.");
     window.location.href = 'login.html';
     return false;
 }
@@ -81,7 +81,7 @@ function loginUser(event) {
             errorBox.textContent = "Falscher Benutzername oder Passwort.";
             errorBox.style.display = 'block';
         } else {
-            alert("Login fehlgeschlagen!");
+            showAlert("Login fehlgeschlagen!");
         }
     }
 }
@@ -100,7 +100,7 @@ function loadProfile() {
         
         document.getElementById('profile-email').textContent = currentUser.email;
     } else {
-        alert("Bitte erst einloggen.");
+        showAlert("Bitte erst einloggen.");
         window.location.href = 'login.html';
     }
 }
@@ -111,8 +111,6 @@ function logout() {
     window.location.href = 'index.html';
 }
 
-// ... (dein bestehender Code oben) ...
-
 // 5. NAMEN ÄNDERN (Neu)
 function updateName(event) {
     event.preventDefault();
@@ -121,7 +119,7 @@ function updateName(event) {
     const newLastname = document.getElementById('edit-lastname').value;
 
     if (!newFirstname || !newLastname) {
-        alert("Bitte beide Felder ausfüllen.");
+        showAlert("Bitte beide Felder ausfüllen.");
         return;
     }
 
@@ -147,7 +145,7 @@ function updateName(event) {
 
     // 5. Profil neu laden (damit man die Änderung sofort sieht)
     loadProfile();
-    alert("Namen erfolgreich geändert!");
+    showAlert("Namen erfolgreich geändert!");
     
     // Felder leeren
     document.getElementById('edit-firstname').value = "";
