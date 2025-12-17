@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
     dateInput.max = maxDate; // Niemand aus der Zukunft
     dateInput.min = minDate; // Niemand älter als 150 Jahre
 
-    //PAsswortmatch Listener
+    //Passwortmatch Listener
     const confirmPasswordInput = document.getElementById('confirm_password');
     confirmPasswordInput.addEventListener('input', validatePasswordMatch);
 });
@@ -118,3 +118,19 @@ function validateForm(event) {
     alert('Daten sind valide und werden (simuliert) gesendet!');
     return false;
 }
+//Function to check if password and confirm_password match
+document.getElementById('loginForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    var username = document.getElementById('username').value;
+    var password = document.getElementById('password').value;
+
+    // Hier sollte die Authentifizierung erfolgen
+    if (username === 'admin' && password === 'password') {
+        window.location.href = 'dashboard.html';
+    } else {
+        var errorMessage = document.getElementById('errorMessage');
+        errorMessage.textContent = 'Ungültiger Benutzername oder Passwort.';
+        errorMessage.style.display = 'block';
+    }
+});

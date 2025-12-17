@@ -46,21 +46,7 @@
     </div>
     
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-
-            var username = document.getElementById('username').value;
-            var password = document.getElementById('password').value;
-
-            // Hier sollte die Authentifizierung erfolgen
-            if (username === 'admin' && password === 'password') {
-                window.location.href = 'dashboard.html';
-            } else {
-                var errorMessage = document.getElementById('errorMessage');
-                errorMessage.textContent = 'Ungültiger Benutzername oder Passwort.';
-                errorMessage.style.display = 'block';
-            }
-        });
+        
     </script>
 
     <!--Fußzeile: wird über .EventListener('DOMContentLoaded') aus footer.html geladen-->
