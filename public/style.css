@@ -12428,6 +12428,7 @@ footer.bg-primary {
   border-radius: 4px;
   min-height: 1.2em;
   line-height: normal;         /* verhindert Textabschnitt */
+  overflow: hidden;            /* Shimmer bleibt im Element */
 }
 
 /* Shimmer-Effekt */
@@ -12443,7 +12444,6 @@ footer.bg-primary {
     transparent
   );
   animation: shimmer 1.2s infinite;
-  height: 100%;                /* passt sich der Elementhöhe an */
 }
 
 /* Keyframes für Shimmer */

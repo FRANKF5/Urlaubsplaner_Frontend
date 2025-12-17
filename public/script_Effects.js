@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Fehlertext einfügen
         el.textContent = 'Laden fehlgeschlagen';
 
-        // Optional: Fehlerklasse für Styling
+        // Fehlerklasse für Styling
         el.classList.add('error');
       }
     }, 8000);
