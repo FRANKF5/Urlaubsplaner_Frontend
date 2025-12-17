@@ -40,3 +40,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 8000);
   });
 });
+
+//Eigene Alert Box
+function showAlert(message, duration = 3000) {
+  const alertDiv = document.createElement('div');
+  alertDiv.classList.add('custom-alert');
+  alertDiv.textContent = message;
+
+  document.body.appendChild(alertDiv);
+
+  requestAnimationFrame(() => {
+    alertDiv.classList.add('show');
+  });
+
+  setTimeout(() => {
+    alertDiv.classList.remove('show');
+    setTimeout(() => alertDiv.remove(), 300);
+  }, duration);
+}

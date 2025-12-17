@@ -12469,3 +12469,25 @@ class wird durch eventlistener für alle class="skeleton" gesetzt */
   color: red;
   font-style: italic;
 }
+
+
+/* +++++++++++++++++++ Alert- Popup +++++++++++++++++++ */
+/* Styling für dein Popup */
+.custom-alert {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #1a73e8;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 9999;
+}
+.custom-alert.show {
+  opacity: 1;
+  transform: translateY(0);
+}

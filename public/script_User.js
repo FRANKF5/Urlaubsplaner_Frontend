@@ -87,7 +87,7 @@ function handleNameChange(event) {
     
     if (input && input.value) {
         nameDisplay.textContent = input.value;
-        alert("Name geändert!");
+        showAlert("Name geändert!");
         input.value = '';
     }
 }
