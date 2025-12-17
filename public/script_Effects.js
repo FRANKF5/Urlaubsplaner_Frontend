@@ -17,3 +17,26 @@ fetch('footer.html')
     })
     .catch(error => console.error('Error loading footer:', error));
 });
+
+
+//Entfernt Skeletons nach 8 Sekunden, wenn Inhalt nicht geladen wurde
+document.addEventListener('DOMContentLoaded', () => {
+  const skeletons = document.querySelectorAll('.skeleton');
+
+  skeletons.forEach(el => {
+    // 8 Sekunden Timer pro Element
+    setTimeout(() => {
+      // Wenn das Element immer noch leer ist
+      if (!el.textContent.trim()) {
+        // Skeleton entfernen
+        el.classList.remove('skeleton');
+
+        // Fehlertext einfügen
+        el.textContent = 'Laden fehlgeschlagen';
+
+        // Optional: Fehlerklasse für Styling
+        el.classList.add('error');
+      }
+    }, 8000);
+  });
+});

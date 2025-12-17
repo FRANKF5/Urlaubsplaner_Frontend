@@ -12416,3 +12416,56 @@ footer.bg-primary {
 .footer-placeholder {
             margin-top: auto;
 }
+
+
+/* ++++++++++++++ Skelleton CSS Effekts ++++++++++++++
+
+/* Grund-Skeleton */
+.skeleton {
+  position: relative;
+  color: transparent;          /* Text unsichtbar */
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  min-height: 1.2em;
+  line-height: normal;         /* verhindert Textabschnitt */
+}
+
+/* Shimmer-Effekt */
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;                    /* füllt das gesamte Element */
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  animation: shimmer 1.2s infinite;
+  height: 100%;                /* passt sich der Elementhöhe an */
+}
+
+/* Keyframes für Shimmer */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* 🔥 Wenn Inhalt da ist → Skeleton aus */
+.skeleton:not(:empty) {
+  background: none;
+  color: inherit;
+}
+
+.skeleton:not(:empty)::after {
+  display: none;
+}
+
+/* Format für nicht geladenen inhalt 
+class wird durch eventlistener für alle class="skeleton" gesetzt */
+.error {
+  color: red;
+  font-style: italic;
+}

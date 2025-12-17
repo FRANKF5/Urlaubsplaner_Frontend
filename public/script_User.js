@@ -15,41 +15,6 @@ async function mockFetchProfile() {
     });
 }
 
-// Profil laden
-async function loadProfile() {
-    const nameElement = document.getElementById('profile-name');
-    const emailElement = document.getElementById('profile-email');
-
-    // Sicherheitscheck: Sind wir überhaupt auf der Profilseite?
-    if (!nameElement || !emailElement) return; 
-
-    try {
-        const data = await mockFetchProfile();
-        nameElement.textContent = data.name;
-        emailElement.textContent = data.email;
-    } catch (error) {
-        console.error("Fehler:", error);
-    }
-}
-
-function logout() {
-    localStorage.removeItem('token');
-    alert("Ausgeloggt! Weiterleitung zur Startseite.");
-    window.location.href = 'index.html'; // Leitet zurück zur Startseite
-}
-
-function handleNameChange(event) {
-    event.preventDefault();
-    const input = document.getElementById('new-name-input');
-    const nameDisplay = document.getElementById('profile-name');
-    
-    if (input && input.value) {
-        nameDisplay.textContent = input.value;
-        alert("Name geändert!");
-        input.value = '';
-    }
-}
-
 
 // Initialisierung beim Laden der Seite
 document.addEventListener('DOMContentLoaded', function() {
@@ -90,6 +55,44 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmPasswordInput = document.getElementById('confirm_password');
     confirmPasswordInput.addEventListener('input', validatePasswordMatch);
 });
+
+
+// Profil laden
+async function loadProfile() {
+    const nameElement = document.getElementById('profile-name');
+    const emailElement = document.getElementById('profile-email');
+
+    // Sicherheitscheck: Sind wir überhaupt auf der Profilseite?
+    if (!nameElement || !emailElement) return; 
+
+    try {
+        const data = await mockFetchProfile();
+        nameElement.textContent = data.name;
+        emailElement.textContent = data.email;
+    } catch (error) {
+        console.error("Fehler:", error);
+    }
+}
+
+function logout() {
+    localStorage.removeItem('token');
+    alert("Ausgeloggt! Weiterleitung zur Startseite.");
+    window.location.href = 'index.html'; // Leitet zurück zur Startseite
+}
+
+function handleNameChange(event) {
+    event.preventDefault();
+    const input = document.getElementById('new-name-input');
+    const nameDisplay = document.getElementById('profile-name');
+    
+    if (input && input.value) {
+        nameDisplay.textContent = input.value;
+        alert("Name geändert!");
+        input.value = '';
+    }
+}
+
+
 
 //Check if Password an Confirm Password match
 function validatePasswordMatch() {
