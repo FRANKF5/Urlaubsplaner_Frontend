@@ -12404,7 +12404,7 @@ textarea.form-control-lg {
 }
 .jumbotron > .card-header {
   margin: -3rem -3rem 2rem -3rem; /* zieht ihn nach oben & zu den Seiten */
-  background: #0d6efd; /* Beispiel */
+  background: var(--bs-primary); /* Beispiel */
   color: white;
   font-weight: bold;
   border-radius: 15px 15px 0 0;
