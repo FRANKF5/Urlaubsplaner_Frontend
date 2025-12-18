@@ -45,70 +45,67 @@
     </nav>
 
     
-    <div class="container fade-in-element card mb-3 shadow register-container jumbotron">
-        
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0 text-center">Konto erstellen</h4>
-            </div>
-            <div class="card-body p-4">
-                        
-                <!--Registrierungformular -->
-                <form id="registrationForm" onsubmit="return registerUser(event)">
+    <div class="container fade-in-element card mb-3 register-container jumbotron">
+        <div class="card-header text-white mb-0 text-center h4">Konto erstellen </div>
+        <div class="card-body p-4">
                     
-                    <div class="form-group mb-3">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="firstname" class="form-label fw-bold">Vorname</label>
-                                <input type="text" class="form-control" id="firstname" placeholder="Max" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="lastname" class="form-label fw-bold">Nachname</label>
-                                <input type="text" class="form-control" id="lastname" placeholder="Mustermann" required>
-                            </div>
-                        </div>
-                        <label for="username" class="form-label fw-bold">Benutzername</label>
-                        <input type="text" class="form-control" id="username" placeholder="Dein Spitzname" required>
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <label for="email" class="form-label fw-bold">E-Mail-Adresse</label>
-                        <input type="email" class="form-control" id="email" placeholder="name@beispiel.de" required>
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <label for="birthdate" class="form-label fw-bold">Geburtsdatum</label>
-                        <input type="date" class="form-control" id="birthdate" required>
-                        <small class="text-muted">Bitte gib dein korrektes Geburtsdatum an.</small>
-                    </div>
-                    
+            <!--Registrierungformular -->
+            <form id="registrationForm" onsubmit="return registerUser(event)">
+                
+                <div class="form-group mb-3">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="password" class="form-label fw-bold">Passwort</label>
-                            <input type="password" class="form-control" id="password" required>
+                            <label for="firstname" class="form-label fw-bold">Vorname</label>
+                            <input type="text" class="form-control" id="firstname" placeholder="Max" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="confirm_password" class="form-label fw-bold">Wiederholen</label>
-                            <input type="password" class="form-control" id="confirm_password" required>
-                            <small id="passwordError" class="text-danger" style="display:none;">Passwörter stimmen nicht überein!</small>
+                            <label for="lastname" class="form-label fw-bold">Nachname</label>
+                            <input type="text" class="form-control" id="lastname" placeholder="Mustermann" required>
                         </div>
                     </div>
+                    <label for="username" class="form-label fw-bold">Benutzername</label>
+                    <input type="text" class="form-control" id="username" placeholder="Dein Spitzname" required>
+                </div>
 
-                    <div class="form-check mb-4 mt-2">
-                        <input class="form-check-input" type="checkbox" value="" id="agbCheck" required>
-                        <label class="form-check-label" for="agbCheck">
-                          Ich bin kein Roboter
-                        </label>
+                <div class="form-group mb-3">
+                    <label for="email" class="form-label fw-bold">E-Mail-Adresse</label>
+                    <input type="email" class="form-control" id="email" placeholder="name@beispiel.de" required>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="birthdate" class="form-label fw-bold">Geburtsdatum</label>
+                    <input type="date" class="form-control" id="birthdate" required>
+                    <small class="text-muted">Bitte gib dein korrektes Geburtsdatum an.</small>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="password" class="form-label fw-bold">Passwort</label>
+                        <input type="password" class="form-control" id="password" required>
                     </div>
-
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg">Jetzt Registrieren</button>
+                    <div class="col-md-6 mb-3">
+                        <label for="confirm_password" class="form-label fw-bold">Wiederholen</label>
+                        <input type="password" class="form-control" id="confirm_password" required>
+                        <small id="passwordError" class="text-danger" style="display:none;">Passwörter stimmen nicht überein!</small>
                     </div>
+                </div>
 
-                </form>
-            </div>
-            <div class="card-footer text-center text-muted">
-                Bereits ein Konto? <a href="login.html">Hier einloggen</a>
-            </div>
+                <div class="form-check mb-4 mt-2">
+                    <input class="form-check-input" type="checkbox" value="" id="agbCheck" required>
+                    <label class="form-check-label" for="agbCheck">
+                        Ich bin kein Roboter
+                    </label>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">Jetzt Registrieren</button>
+                </div>
+
+            </form>
+        </div>
+        <div class="card-footer text-center text-muted">
+            Bereits ein Konto? <a href="login.html">Hier einloggen</a>
+        </div>
         
     </div>
 

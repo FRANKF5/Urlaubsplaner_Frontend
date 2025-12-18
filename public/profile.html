@@ -50,9 +50,9 @@
         </div>
     </nav>
 
-    <div class="container">
-        <div class="card register-container mb-3 jumbotron fade-in-element" style="max-width: 40rem; margin: auto;">
-            <div class="card-header bg-primary text-white mb-0 text-center h4">Mein Profil</div>
+    <div calss="container fade-in-element">
+        <div class="card register-container mb-3 jumbotron">
+            <div class="card-header bg-primary text-white mb-3 text-center h4">Mein Profil</div>
             <div class="card-body">
 
                 <!-- Profilname -->
@@ -64,7 +64,7 @@
                 
                 <form id="update-name-form" class="mt-4">
                     <label class="form-label fw-bold">Daten ändern:</label>
-    
+
                     <div class="row g-2">
                         <div class="col-md-6">
                             <input type="text" id="edit-firstname" class="form-control" placeholder="Vorname">
@@ -73,18 +73,15 @@
                             <input type="text" id="edit-lastname" class="form-control" placeholder="Nachname">
                         </div>
                     </div>
-    
+
                     <button class="btn btn-outline-primary w-100 mt-3" type="submit">Änderungen speichern</button>
                 </form>
 
                 <button id="logout-btn" class="btn btn-danger w-100 mt-3">Logout</button>
             </div>
         </div>
-        
-        <div class="text-center mt-3">
-            <a href="index.html" class="text-decoration-none">&larr; Zurück zur Startseite</a>
-        </div>
     </div>
+    
     
     <!--Fußzeile: wird über .EventListener('DOMContentLoaded') aus footer.html geladen-->
     <div class="footer-placeholder"></div>
