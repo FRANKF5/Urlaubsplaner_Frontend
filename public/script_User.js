@@ -7,7 +7,7 @@
 const API_BASE_URL = 'http://localhost:3000/api';
 
 async function apiCall(endpoint, method = 'GET', body = null) {
-    const options = {
+    const options = { 
         method: method,
         headers: {
             'Content-Type': 'application/json',
@@ -18,7 +18,7 @@ async function apiCall(endpoint, method = 'GET', body = null) {
     if (body) {
         options.body = JSON.stringify(body);
     }
-
+    
     try {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
         
