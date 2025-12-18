@@ -156,7 +156,7 @@ async function updateName(event) {
     const newLastname = document.getElementById('edit-lastname').value;
 
     if (!newFirstname || !newLastname) {
-        showAlert("Bitte beide Felder ausfüllen.",'warning');
+        showAlert("Bitte alle Felder ausfüllen.",'warning');
         return;
     }
 

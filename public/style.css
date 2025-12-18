@@ -12408,7 +12408,8 @@ textarea.form-control-lg {
             margin-bottom: 40px;
 }
 
-/* Footer with reversed navbar gradient */
+
+/* Footer */
 footer.bg-primary {
   background-image: none !important;
   background-color: #2fa4e7 !important;
@@ -12453,7 +12454,7 @@ footer.bg-primary {
   }
 }
 
-/* 🔥 Wenn Inhalt da ist → Skeleton aus */
+/* Wenn Inhalt da ist: Skeleton aus */
 .skeleton:not(:empty) {
   background: none;
   color: inherit;
@@ -12472,7 +12473,7 @@ class wird durch eventlistener für alle class="skeleton" gesetzt */
 
 
 /* +++++++++++++++++++ Alert- Popup +++++++++++++++++++ */
-/* Styling für dein Popup */
+/* Styling für das showAlert */
 .custom-alert {
   position: fixed;
   top: 20px;
