@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrierung - Cerulean Design</title>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.3.3/cerulean/bootstrap.min.css">
+    <title>Urlaubsplaner - Start</title>
+   <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.3.8/cerulean/bootstrap.min.css">
+    -->
+    <link rel="stylesheet" href="style.css">
     
 </head>
-<body>
-
+<body class="modern-background">
     <!-- Navigationsleiste oben-->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-5 sticky-top" style="box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <div class="container-fluid">
@@ -21,37 +21,37 @@
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                <a class="nav-link" href="index.html">Start</a>
-                </li>
-                <li class="nav-item">
-                <a class="nav-link" href="user_registration.html">Registrieren</a>
-                </li>
-                <li class="nav-item">
-                <a class="nav-link" href="login.html">Login</a>
-                </li>
-                <li class="nav-item">
-                <a class="nav-link active" href="profile.html">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle me-1" viewBox="0 0 16 16">
-                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
-                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
-                </svg>
-                Mein Profil
-                </a>
-                </li>
-                </ul>
+                    <li class="nav-item">
+                         <a class="nav-link" href="index.html">Start</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="user_registration.html">Registrieren</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="profile.html">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle me-1" viewBox="0 0 16 16">
+                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                        </svg>
+                        Mein Profil
+                    </a>
+                    </li>
+                    </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container register-container">
+    
+    <div class="container fade-in-element card mb-3 shadow register-container jumbotron">
         
-        <div class="card border-primary mb-3 shadow">
             <div class="card-header bg-primary text-white">
                 <h4 class="mb-0 text-center">Konto erstellen</h4>
             </div>
             <div class="card-body p-4">
-                
+                        
                 <!--Registrierungformular -->
                 <form id="registrationForm" onsubmit="return registerUser(event)">
                     
@@ -109,7 +109,7 @@
             <div class="card-footer text-center text-muted">
                 Bereits ein Konto? <a href="login.html">Hier einloggen</a>
             </div>
-        </div>
+        
     </div>
 
     <!--Fußzeile: wird über .EventListener('DOMContentLoaded') aus footer.html geladen-->
