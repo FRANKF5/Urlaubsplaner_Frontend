@@ -50,37 +50,37 @@
         </div>
     </nav>
 
-    <div calss="container fade-in-element">
-        <div class="card register-container mb-3 jumbotron">
-            <div class="card-header bg-primary text-white mb-3 text-center h4">Mein Profil</div>
-            <div class="card-body">
+    
+    <div class="container fade-in-element card mb-3 register-container jumbotron">
+        <div class="card-header bg-primary text-white mb-3 text-center h4">Mein Profil</div>
+        <div class="card-body">
 
-                <!-- Profilname -->
-                <h4 class="card-title skeleton" id="profile-name"></h4>
-                <!-- Email -->
-                <p class="card-text text-muted skeleton" id="profile-email"></p>
-                
-                <hr>
-                
-                <form id="update-name-form" class="mt-4">
-                    <label class="form-label fw-bold">Daten ändern:</label>
+            <!-- Profilname -->
+            <h4 class="card-title skeleton" id="profile-name"></h4>
+            <!-- Email -->
+            <p class="card-text text-muted skeleton" id="profile-email"></p>
+            
+            <hr>
+            
+            <form id="update-name-form" class="mt-4">
+                <label class="form-label fw-bold">Daten ändern:</label>
 
-                    <div class="row g-2">
-                        <div class="col-md-6">
-                            <input type="text" id="edit-firstname" class="form-control" placeholder="Vorname">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" id="edit-lastname" class="form-control" placeholder="Nachname">
-                        </div>
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <input type="text" id="edit-firstname" class="form-control" placeholder="Vorname">
                     </div>
+                    <div class="col-md-6">
+                        <input type="text" id="edit-lastname" class="form-control" placeholder="Nachname">
+                    </div>
+                </div>
 
-                    <button class="btn btn-outline-primary w-100 mt-3" type="submit">Änderungen speichern</button>
-                </form>
+                <button class="btn btn-outline-primary w-100 mt-3" type="submit">Änderungen speichern</button>
+            </form>
 
-                <button id="logout-btn" class="btn btn-danger w-100 mt-3">Logout</button>
-            </div>
+            <button id="logout-btn" class="btn btn-danger w-100 mt-3">Logout</button>
         </div>
     </div>
+    
     
     
     <!--Fußzeile: wird über .EventListener('DOMContentLoaded') aus footer.html geladen-->

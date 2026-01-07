@@ -6,6 +6,7 @@
 // API Base URL - Anpassen falls nötig
 const API_BASE_URL = 'http://localhost:3000/api';
 
+//eigene funktion für API aufrufe
 async function apiCall(endpoint, method = 'GET', body = null) {
     const options = { 
         method: method,
