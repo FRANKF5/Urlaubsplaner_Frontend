@@ -102,6 +102,19 @@
     </form>
 
     <button id="logout-btn" class="btn btn-outline-danger w-100 mt-3">Logout</button>
+    
+    <div class="card border-info mb-3 mt-4" style="max-width: 40rem; margin: auto;">
+        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+            <span>Meine geplanten Reisen</span>
+            <a href="travel_budget.html" class="btn btn-light btn-sm text-info fw-bold">+ Neue Reise</a>
+        </div>
+        
+        <div class="card-body">
+            <div id="trip-list" class="list-group list-group-flush">
+                <p class="text-muted text-center fst-italic">Noch keine Reisen geplant.</p>
+            </div>
+        </div>
+    </div>
 </div>
         </div>
         
@@ -109,7 +122,33 @@
             <a href="index.html" class="text-decoration-none">&larr; Zurück zur Startseite</a>
         </div>
     </div>
-    
+        <div class="modal fade" id="editTripModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-white">
+        <h5 class="modal-title">Reise bearbeiten</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-trip-form" onsubmit="return saveEditedTrip(event)">
+            <input type="hidden" id="edit-trip-id">
+            
+            <div class="mb-3">
+                <label class="form-label">Ziel</label>
+                <input type="text" class="form-control" id="edit-trip-dest" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Budget (€)</label>
+                <input type="number" class="form-control" id="edit-trip-budget" required>
+            </div>
+            <div class="d-grid">
+                <button type="submit" class="btn btn-warning">Änderungen speichern</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
     <!--Fußzeile: wird über .EventListener('DOMContentLoaded') aus footer.html geladen-->
     <div class="footer-placeholder"></div>
 
