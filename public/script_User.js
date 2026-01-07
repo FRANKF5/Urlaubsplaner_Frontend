@@ -1,48 +1,132 @@
 /* script_User.js
-   Zentrale Steuerung für Login, Registrierung und Profil
-   Kommunikation mit REST API über Fetch
+   Zentrale Steuerung INKLUSIVE Löschen & Bearbeiten von Reisen
 */
 
-// API Base URL - Anpassen falls nötig
-const API_BASE_URL = 'http://localhost:3000/api';
+// --- 1. HILFSFUNKTIONEN (Datenbank) ---
 
-//eigene funktion für API aufrufe
-async function apiCall(endpoint, method = 'GET', body = null) {
-    const options = { 
-        method: method,
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
-        }
-    };
-
-    if (body) {
-        options.body = JSON.stringify(body);
+function saveUserToDB(user) {
+    let users = JSON.parse(localStorage.getItem('users_db')) || [];
+    const index = users.findIndex(u => u.username === user.username);
+    if (index !== -1) {
+        users[index] = user;
+    } else {
+        users.push(user);
     }
+    localStorage.setItem('users_db', JSON.stringify(users));
+}
+
+function findUser(username, password) {
+    let users = JSON.parse(localStorage.getItem('users_db')) || [];
+    return users.find(u => u.username === username && u.password === password);
+}
+
+function userExists(username) {
+    let users = JSON.parse(localStorage.getItem('users_db')) || [];
+    return users.some(u => u.username === username);
+}
+
+function calculateAge(birthdateString) {
+    if (!birthdateString) return "Unbekannt";
+    const today = new Date();
+    const birthDate = new Date(birthdateString);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+    return age;
+}
+
+// --- 2. REISE-FUNKTIONEN (NEU) ---
+
+// A. Löschen
+function deleteTrip(tripId) {
+    if(!confirm("Möchtest du diese Reise wirklich löschen?")) return;
+
+    let currentUser = JSON.parse(localStorage.getItem('current_user'));
     
-    try {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || `API Error: ${response.status}`);
-        }
-        
-        return await response.json();
-    } catch (error) {
-        console.error('API Call Error:', error);
-        throw error;
+    // Wir filtern die Reise mit der passenden ID raus
+    currentUser.trips = currentUser.trips.filter(t => t.id != tripId);
+
+    // Speichern & Neu laden
+    localStorage.setItem('current_user', JSON.stringify(currentUser));
+    saveUserToDB(currentUser);
+    loadProfile(); // Liste aktualisieren ohne Reload
+}
+
+// B. Bearbeiten vorbereiten (Modal öffnen)
+function openEditTripModal(tripId) {
+    let currentUser = JSON.parse(localStorage.getItem('current_user'));
+    const trip = currentUser.trips.find(t => t.id == tripId);
+
+    if (trip) {
+        // Daten in das Modal füllen
+        document.getElementById('edit-trip-id').value = trip.id;
+        document.getElementById('edit-trip-dest').value = trip.destination;
+        document.getElementById('edit-trip-budget').value = trip.budget;
+
+        // Modal per Bootstrap öffnen
+        const modal = new bootstrap.Modal(document.getElementById('editTripModal'));
+        modal.show();
     }
 }
 
-// --- HAUPTFUNKTIONEN ---
+// C. Bearbeiten speichern
+function saveEditedTrip(event) {
+    event.preventDefault(); // Kein Neuladen der Seite
 
-// 1. REGISTRIERUNG
-async function registerUser(event) {
+    const tripId = document.getElementById('edit-trip-id').value;
+    const newDest = document.getElementById('edit-trip-dest').value;
+    const newBudget = document.getElementById('edit-trip-budget').value;
+
+    let currentUser = JSON.parse(localStorage.getItem('current_user'));
+
+    // Reise im Array finden und aktualisieren
+    const tripIndex = currentUser.trips.findIndex(t => t.id == tripId);
+    if (tripIndex !== -1) {
+        currentUser.trips[tripIndex].destination = newDest;
+        currentUser.trips[tripIndex].budget = newBudget;
+
+        // Speichern
+        localStorage.setItem('current_user', JSON.stringify(currentUser));
+        saveUserToDB(currentUser);
+        
+        // Modal schließen (Trick: Overlay entfernen und neu laden)
+        // Einfacher: Seite neu laden oder loadProfile aufrufen
+        alert("Reise geändert!");
+        window.location.reload(); 
+    }
+}
+
+// --- 3. HAUPTFUNKTIONEN ---
+
+function saveTrip(event) {
     event.preventDefault();
+    const dest = document.getElementById('trip-destination').value;
+    const budget = document.getElementById('trip-budget').value;
 
-    const firstname = document.getElementById('firstname')?.value || '';
-    const lastname = document.getElementById('lastname')?.value || '';
+    let currentUser = JSON.parse(localStorage.getItem('current_user'));
+    if (!currentUser) return window.location.href = 'login.html';
+
+    if (!currentUser.trips) currentUser.trips = [];
+
+    const newTrip = {
+        destination: dest,
+        budget: budget,
+        id: Date.now() 
+    };
+    currentUser.trips.push(newTrip);
+
+    localStorage.setItem('current_user', JSON.stringify(currentUser));
+    saveUserToDB(currentUser);
+
+    alert("Reise gespeichert!");
+    window.location.href = 'profile.html';
+    return false;
+}
+
+function registerUser(event) {
+    event.preventDefault();
+    const firstname = document.getElementById('firstname').value;
+    const lastname = document.getElementById('lastname').value;
     const username = document.getElementById('username').value;
     const email = document.getElementById('email').value;
     const birthdate = document.getElementById('birthdate').value;
@@ -50,155 +134,140 @@ async function registerUser(event) {
     const confirm = document.getElementById('confirm_password').value;
 
     if (password !== confirm) {
-        const errorElement = document.getElementById('passwordError');
-        if (errorElement) errorElement.style.display = 'block';
+        document.getElementById('passwordError').style.display = 'block';
+        return false;
+    }
+    if (userExists(username)) {
+        alert("Benutzername ist vergeben!");
         return false;
     }
 
-    try {
-        const response = await apiCall('/auth/register', 'POST', {
-            firstname,
-            lastname,
-            username,
-            email,
-            birthdate,
-            password
-        });
-
-        showAlert("Erfolgreich registriert! Bitte jetzt einloggen.", 'success');
-        window.location.href = 'login.html';
-    } catch (error) {
-        showAlert(`Registrierung fehlgeschlagen: ${error.message}`, 'danger');
-    }
+    const newUser = { 
+        firstname, lastname, username, email, birthdate, password,
+        address: "", destination: "", activities: [], trips: [] 
+    };
+    
+    saveUserToDB(newUser);
+    alert("Registrierung erfolgreich!");
+    window.location.href = 'login.html';
     return false;
 }
 
-// 2. LOGIN
-async function loginUser(event) {
+function loginUser(event) {
     event.preventDefault();
-
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-    const errorBox = document.getElementById('errorMessage');
+    const user = findUser(username, password);
 
-    try {
-        const response = await apiCall('/auth/login', 'POST', {
-            username,
-            password
-        });
-
-        // Token speichern
-        localStorage.setItem('auth_token', response.token);
-        localStorage.setItem('current_user', JSON.stringify(response.user));
-        
+    if (user) {
+        localStorage.setItem('current_user', JSON.stringify(user));
         window.location.href = 'profile.html';
-    } catch (error) {
-        if (errorBox) {
-            errorBox.textContent = error.message || "Falscher Benutzername oder Passwort.";
-            errorBox.style.display = 'block';
-        } else {
-            showAlert(error.message || "Login fehlgeschlagen!", 'danger');
-        }
+    } else {
+        document.getElementById('errorMessage').style.display = 'block';
+        document.getElementById('errorMessage').textContent = "Falsche Daten.";
     }
-    return false;
 }
 
-// 3. PROFIL ANZEIGEN
-async function loadProfile() {
+function loadProfile() {
     const nameField = document.getElementById('profile-name');
-    if (!nameField) return;
+    if (!nameField) return; 
 
-    try {
-        const response = await apiCall('/user/profile', 'GET');
-        
-        // Speichern für lokale Nutzung
-        localStorage.setItem('current_user', JSON.stringify(response.user));
+    const currentUser = JSON.parse(localStorage.getItem('current_user'));
+    if (!currentUser) return window.location.href = 'login.html';
 
-        nameField.innerHTML = `${response.user.firstname} ${response.user.lastname} <small class="text-muted">(${response.user.username})</small>`;
+    // A) Profil Header
+    const age = calculateAge(currentUser.birthdate);
+    nameField.innerHTML = `${currentUser.firstname} ${currentUser.lastname} <small class="text-muted">(${currentUser.username})</small>`;
+    
+    const infoField = document.getElementById('profile-info');
+    if(infoField) infoField.innerHTML = `📧 ${currentUser.email} &nbsp;|&nbsp; 🎂 ${age} Jahre alt`;
+
+    // B) Formular füllen
+    const editFirst = document.getElementById('edit-firstname');
+    if (editFirst) {
+        editFirst.value = currentUser.firstname || "";
+        document.getElementById('edit-lastname').value = currentUser.lastname || "";
+        document.getElementById('edit-address').value = currentUser.address || "";
+        document.getElementById('edit-destination').value = currentUser.destination || "";
         
-        const emailField = document.getElementById('profile-email');
-        if (emailField) {
-            emailField.textContent = response.user.email;
-        }
-    } catch (error) {
-        const currentUser = JSON.parse(localStorage.getItem('current_user'));
-        
-        if (currentUser) {
-            nameField.innerHTML = `${currentUser.firstname} ${currentUser.lastname} <small class="text-muted">(${currentUser.username})</small>`;
-            const emailField = document.getElementById('profile-email');
-            if (emailField) {
-                emailField.textContent = currentUser.email;
+        const editAct = document.getElementById('edit-activities');
+        if (editAct) {
+            const myActivities = currentUser.activities || [];
+            for (let i = 0; i < editAct.options.length; i++) {
+                if (myActivities.includes(editAct.options[i].value)) editAct.options[i].selected = true;
             }
+        }
+    }
+
+    // C) Reisen anzeigen (MIT BUTTONS)
+    const tripList = document.getElementById('trip-list');
+    if (tripList) {
+        const myTrips = currentUser.trips || [];
+        tripList.innerHTML = ""; 
+        
+        if (myTrips.length === 0) {
+            tripList.innerHTML = '<p class="text-muted text-center fst-italic">Noch keine Reisen geplant.</p>';
         } else {
-            showAlert("Bitte erst einloggen.",'blue');
-            window.location.href = 'login.html';
+            myTrips.forEach(trip => {
+                const item = document.createElement('div');
+                item.className = "list-group-item d-flex justify-content-between align-items-center";
+                
+                // Wir fügen hier die Buttons ein mit onclick Events
+                item.innerHTML = `
+                    <div>
+                        <h5 class="mb-1">✈️ ${trip.destination}</h5>
+                        <small class="text-muted">Budget: <strong>${trip.budget} €</strong></small>
+                    </div>
+                    <div>
+                        <button onclick="openEditTripModal(${trip.id})" class="btn btn-outline-warning btn-sm me-1">✏️</button>
+                        <button onclick="deleteTrip(${trip.id})" class="btn btn-outline-danger btn-sm">🗑️</button>
+                    </div>
+                `;
+                tripList.appendChild(item);
+            });
         }
     }
 }
 
-// 4. LOGOUT
-async function logout() {
-    try {
-        await apiCall('/auth/logout', 'POST');
-    } catch (error) {
-        console.error('Logout error:', error);
+function updateProfile(event) {
+    event.preventDefault();
+    let currentUser = JSON.parse(localStorage.getItem('current_user'));
+
+    currentUser.firstname = document.getElementById('edit-firstname').value;
+    currentUser.lastname = document.getElementById('edit-lastname').value;
+    currentUser.address = document.getElementById('edit-address').value;
+    currentUser.destination = document.getElementById('edit-destination').value;
+
+    const activitiesSelect = document.getElementById('edit-activities');
+    const selectedActivities = [];
+    if (activitiesSelect) {
+        for (let i = 0; i < activitiesSelect.options.length; i++) {
+            if (activitiesSelect.options[i].selected) selectedActivities.push(activitiesSelect.options[i].value);
+        }
     }
-    
-    localStorage.removeItem('auth_token');
+    currentUser.activities = selectedActivities;
+
+    localStorage.setItem('current_user', JSON.stringify(currentUser));
+    saveUserToDB(currentUser);
+    loadProfile();
+    alert("Profil aktualisiert!");
+}
+
+function logout() {
     localStorage.removeItem('current_user');
     window.location.href = 'index.html';
 }
 
-// 5. NAMEN ÄNDERN
-async function updateName(event) {
-    event.preventDefault();
-
-    const newFirstname = document.getElementById('edit-firstname').value;
-    const newLastname = document.getElementById('edit-lastname').value;
-
-    if (!newFirstname || !newLastname) {
-        showAlert("Bitte alle Felder ausfüllen.",'warning');
-        return;
-    }
-
-    try {
-        const response = await apiCall('/user/profile', 'PUT', {
-            firstname: newFirstname,
-            lastname: newLastname
-        });
-
-        localStorage.setItem('current_user', JSON.stringify(response.user));
-        loadProfile();
-        showAlert("Namen erfolgreich geändert!", 'success');
-        
-        document.getElementById('edit-firstname').value = "";
-        document.getElementById('edit-lastname').value = "";
-    } catch (error) {
-        showAlert(`Fehler beim Ändern der Namen: ${error.message}`, 'danger');
-    }
-}
-
 // --- INIT ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Prüfen ob User angemeldet ist (Token vorhanden)
-    const token = localStorage.getItem('auth_token');
-    
-    // Profil laden
-    if (token) {
-        loadProfile();
-    }
+    loadProfile();
 
-    // Logout Button
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
-    // Update Formular aktivieren
-    const updateForm = document.getElementById('update-name-form');
-    if (updateForm) {
-        updateForm.addEventListener('submit', updateName);
-    }
+    const updateForm = document.getElementById('update-profile-form');
+    if (updateForm) updateForm.addEventListener('submit', updateProfile);
     
-    // Datums-Grenzen für Registrierung
     const dateInput = document.getElementById('birthdate');
     if(dateInput) {
         const today = new Date().toISOString().split('T')[0];
