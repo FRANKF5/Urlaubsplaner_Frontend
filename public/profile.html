@@ -54,31 +54,55 @@
         <div class="card border-primary mb-3" style="max-width: 40rem; margin: auto;">
             <div class="card-header">Mein Profil</div>
             <div class="card-body">
-
-                <!-- Profilname -->
-                <h4 class="card-title skeleton" id="profile-name"></h4>
-                <!-- Email -->
-                <p class="card-text text-muted skeleton" id="profile-email"></p>
-                
-                <hr>
-                
-                <form id="update-name-form" class="mt-4">
-                    <label class="form-label fw-bold">Daten ändern:</label>
+    <h4 class="card-title text-center mb-0" id="profile-name">Lade Daten...</h4>
+    <p class="text-center text-muted mb-3" id="profile-info">
+        </p>
     
-                    <div class="row g-2">
-                        <div class="col-md-6">
-                            <input type="text" id="edit-firstname" class="form-control" placeholder="Vorname">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" id="edit-lastname" class="form-control" placeholder="Nachname">
-                        </div>
-                    </div>
+    <hr>
     
-    <button class="btn btn-outline-primary w-100 mt-3" type="submit">Änderungen speichern</button>
-</form>
+    <form id="update-profile-form">
+        <h5 class="mb-3 text-primary">Profil bearbeiten</h5>
 
-                <button id="logout-btn" class="btn btn-danger w-100 mt-3">Logout</button>
+        <div class="row g-2 mb-3">
+            <div class="col-md-6">
+                <label class="form-label small">Vorname</label>
+                <input type="text" id="edit-firstname" class="form-control">
             </div>
+            <div class="col-md-6">
+                <label class="form-label small">Nachname</label>
+                <input type="text" id="edit-lastname" class="form-control">
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label small">Adresse (Straße, Hausnr, Ort)</label>
+            <input type="text" id="edit-address" class="form-control" placeholder="Musterstraße 1, 12345 Berlin">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label small">Mein Traumreiseziel 🌴</label>
+            <input type="text" id="edit-destination" class="form-control" placeholder="z.B. Malediven">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label small">Was machst du gerne? (Mehrfachauswahl mit Strg/Cmd)</label>
+            <select class="form-select" id="edit-activities" multiple size="4">
+                <option value="Strand">🏖️ Strand & Meer</option>
+                <option value="Wandern">🥾 Wandern & Natur</option>
+                <option value="Stadt">🏙️ Städtetrips</option>
+                <option value="Kultur">🏛️ Kultur & Museen</option>
+                <option value="Party">🎉 Party & Nightlife</option>
+                <option value="Sport">surfing Sport & Action</option>
+                <option value="Essen">🍕 Kulinarik</option>
+            </select>
+            <small class="text-muted" style="font-size: 0.75rem;">Halte die Strg-Taste (Windows) oder Cmd-Taste (Mac) gedrückt, um mehrere zu wählen.</small>
+        </div>
+
+        <button class="btn btn-primary w-100 mt-2" type="submit">Alle Änderungen speichern</button>
+    </form>
+
+    <button id="logout-btn" class="btn btn-outline-danger w-100 mt-3">Logout</button>
+</div>
         </div>
         
         <div class="text-center mt-3">

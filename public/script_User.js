@@ -1,206 +1,234 @@
 /* script_User.js
    Zentrale Steuerung für Login, Registrierung und Profil
-   Kommunikation mit REST API über Fetch
+   INKLUSIVE: Adresse, Alter, Traumziel & Aktivitäten
+   Nutzt LocalStorage als Simulation für die Datenbank.
 */
 
-// API Base URL - Anpassen falls nötig
-const API_BASE_URL = 'http://localhost:3000/api';
+// --- 1. HILFSFUNKTIONEN (Datenbank-Simulation) ---
 
-async function apiCall(endpoint, method = 'GET', body = null) {
-    const options = {
-        method: method,
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
-        }
-    };
-
-    if (body) {
-        options.body = JSON.stringify(body);
+// Speichert einen User dauerhaft in der "Datenbank" (LocalStorage)
+function saveUserToDB(user) {
+    let users = JSON.parse(localStorage.getItem('users_db')) || [];
+    
+    // Prüfen, ob User schon existiert (Update), sonst hinzufügen
+    const index = users.findIndex(u => u.username === user.username);
+    if (index !== -1) {
+        users[index] = user; // Update
+    } else {
+        users.push(user); // Neu
     }
-
-    try {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || `API Error: ${response.status}`);
-        }
-        
-        return await response.json();
-    } catch (error) {
-        console.error('API Call Error:', error);
-        throw error;
-    }
+    
+    localStorage.setItem('users_db', JSON.stringify(users));
 }
 
-// --- HAUPTFUNKTIONEN ---
+// Sucht User für Login
+function findUser(username, password) {
+    let users = JSON.parse(localStorage.getItem('users_db')) || [];
+    return users.find(u => u.username === username && u.password === password);
+}
 
-// 1. REGISTRIERUNG
-async function registerUser(event) {
+// Prüft bei Registrierung, ob Username schon weg ist
+function userExists(username) {
+    let users = JSON.parse(localStorage.getItem('users_db')) || [];
+    return users.some(u => u.username === username);
+}
+
+// Berechnet das Alter basierend auf dem Geburtsdatum
+function calculateAge(birthdateString) {
+    if (!birthdateString) return "Unbekannt";
+    const today = new Date();
+    const birthDate = new Date(birthdateString);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    
+    // Korrektur, falls Geburtstag dieses Jahr noch nicht war
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age;
+}
+
+
+// --- 2. HAUPTFUNKTIONEN (Seiten-Logik) ---
+
+// A. REGISTRIERUNG
+function registerUser(event) {
     event.preventDefault();
 
-    const firstname = document.getElementById('firstname')?.value || '';
-    const lastname = document.getElementById('lastname')?.value || '';
+    // Daten aus Formular holen
+    const firstname = document.getElementById('firstname').value;
+    const lastname = document.getElementById('lastname').value;
     const username = document.getElementById('username').value;
     const email = document.getElementById('email').value;
     const birthdate = document.getElementById('birthdate').value;
     const password = document.getElementById('password').value;
     const confirm = document.getElementById('confirm_password').value;
 
+    // Validierung
     if (password !== confirm) {
-        const errorElement = document.getElementById('passwordError');
-        if (errorElement) errorElement.style.display = 'block';
+        document.getElementById('passwordError').style.display = 'block';
+        return false;
+    }
+    if (userExists(username)) {
+        alert("Benutzername ist bereits vergeben!");
         return false;
     }
 
-    try {
-        const response = await apiCall('/auth/register', 'POST', {
-            firstname,
-            lastname,
-            username,
-            email,
-            birthdate,
-            password
-        });
+    // User Objekt erstellen (inklusive leerer Felder für die neuen Profil-Infos)
+    const newUser = { 
+        firstname, 
+        lastname, 
+        username, 
+        email, 
+        birthdate, 
+        password,
+        address: "", 
+        destination: "", 
+        activities: [] 
+    };
+    
+    saveUserToDB(newUser);
 
-        showAlert("Erfolgreich registriert! Bitte jetzt einloggen.", 'success');
-        window.location.href = 'login.html';
-    } catch (error) {
-        showAlert(`Registrierung fehlgeschlagen: ${error.message}`, 'danger');
-    }
+    alert("Registrierung erfolgreich! Du wirst zum Login weitergeleitet.");
+    window.location.href = 'login.html';
     return false;
 }
 
-// 2. LOGIN
-async function loginUser(event) {
+// B. LOGIN
+function loginUser(event) {
     event.preventDefault();
 
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     const errorBox = document.getElementById('errorMessage');
 
-    try {
-        const response = await apiCall('/auth/login', 'POST', {
-            username,
-            password
-        });
+    const user = findUser(username, password);
 
-        // Token speichern
-        localStorage.setItem('auth_token', response.token);
-        localStorage.setItem('current_user', JSON.stringify(response.user));
-        
+    if (user) {
+        // Erfolgreich: User in "Session" speichern
+        localStorage.setItem('current_user', JSON.stringify(user));
         window.location.href = 'profile.html';
-    } catch (error) {
+    } else {
+        // Fehler anzeigen
         if (errorBox) {
-            errorBox.textContent = error.message || "Falscher Benutzername oder Passwort.";
+            errorBox.textContent = "Falscher Benutzername oder Passwort.";
             errorBox.style.display = 'block';
         } else {
-            showAlert(error.message || "Login fehlgeschlagen!", 'danger');
+            alert("Login fehlgeschlagen!");
         }
     }
-    return false;
 }
 
-// 3. PROFIL ANZEIGEN
-async function loadProfile() {
+// C. PROFIL LADEN (Anzeigen & Formular füllen)
+function loadProfile() {
     const nameField = document.getElementById('profile-name');
-    if (!nameField) return;
+    
+    // Abbruch, wenn wir nicht auf der Profilseite sind
+    if (!nameField) return; 
 
-    try {
-        const response = await apiCall('/user/profile', 'GET');
-        
-        // Speichern für lokale Nutzung
-        localStorage.setItem('current_user', JSON.stringify(response.user));
+    const currentUser = JSON.parse(localStorage.getItem('current_user'));
 
-        nameField.innerHTML = `${response.user.firstname} ${response.user.lastname} <small class="text-muted">(${response.user.username})</small>`;
-        
+    if (!currentUser) {
+        // Nicht eingeloggt? Zurück zum Login
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // 1. Kopfbereich befüllen (Name, Email, Alter)
+    const age = calculateAge(currentUser.birthdate);
+    nameField.innerHTML = `${currentUser.firstname} ${currentUser.lastname} <small class="text-muted">(${currentUser.username})</small>`;
+    
+    const infoField = document.getElementById('profile-info');
+    if(infoField) {
+        infoField.innerHTML = `📧 ${currentUser.email} &nbsp;|&nbsp; 🎂 ${age} Jahre alt`;
+    } else {
+        // Fallback für alte HTML Version
         const emailField = document.getElementById('profile-email');
-        if (emailField) {
-            emailField.textContent = response.user.email;
-        }
-    } catch (error) {
-        const currentUser = JSON.parse(localStorage.getItem('current_user'));
-        
-        if (currentUser) {
-            nameField.innerHTML = `${currentUser.firstname} ${currentUser.lastname} <small class="text-muted">(${currentUser.username})</small>`;
-            const emailField = document.getElementById('profile-email');
-            if (emailField) {
-                emailField.textContent = currentUser.email;
+        if(emailField) emailField.textContent = currentUser.email;
+    }
+
+    // 2. Formularfelder mit gespeicherten Daten füllen
+    const editFirst = document.getElementById('edit-firstname');
+    const editLast = document.getElementById('edit-lastname');
+    const editAddr = document.getElementById('edit-address');
+    const editDest = document.getElementById('edit-destination');
+    const editAct = document.getElementById('edit-activities');
+
+    if (editFirst) editFirst.value = currentUser.firstname || "";
+    if (editLast) editLast.value = currentUser.lastname || "";
+    if (editAddr) editAddr.value = currentUser.address || "";
+    if (editDest) editDest.value = currentUser.destination || "";
+
+    // 3. Aktivitäten im Dropdown markieren
+    if (editAct) {
+        const myActivities = currentUser.activities || [];
+        for (let i = 0; i < editAct.options.length; i++) {
+            const opt = editAct.options[i];
+            if (myActivities.includes(opt.value)) {
+                opt.selected = true;
             }
-        } else {
-            showAlert("Bitte erst einloggen.",'blue');
-            window.location.href = 'login.html';
         }
     }
 }
 
-// 4. LOGOUT
-async function logout() {
-    try {
-        await apiCall('/auth/logout', 'POST');
-    } catch (error) {
-        console.error('Logout error:', error);
+// D. PROFIL SPEICHERN (Update)
+function updateProfile(event) {
+    event.preventDefault();
+
+    let currentUser = JSON.parse(localStorage.getItem('current_user'));
+
+    // Textfelder auslesen
+    currentUser.firstname = document.getElementById('edit-firstname').value;
+    currentUser.lastname = document.getElementById('edit-lastname').value;
+    currentUser.address = document.getElementById('edit-address').value;
+    currentUser.destination = document.getElementById('edit-destination').value;
+
+    // Multi-Select (Aktivitäten) auslesen
+    const activitiesSelect = document.getElementById('edit-activities');
+    const selectedActivities = [];
+    if (activitiesSelect) {
+        for (let i = 0; i < activitiesSelect.options.length; i++) {
+            if (activitiesSelect.options[i].selected) {
+                selectedActivities.push(activitiesSelect.options[i].value);
+            }
+        }
     }
-    
-    localStorage.removeItem('auth_token');
+    currentUser.activities = selectedActivities;
+
+    // Speichern (Sowohl in der Session als auch in der DB)
+    localStorage.setItem('current_user', JSON.stringify(currentUser));
+    saveUserToDB(currentUser);
+
+    // Ansicht aktualisieren
+    loadProfile();
+    alert("Profil erfolgreich aktualisiert!");
+}
+
+// E. LOGOUT
+function logout() {
     localStorage.removeItem('current_user');
     window.location.href = 'index.html';
 }
 
-// 5. NAMEN ÄNDERN
-async function updateName(event) {
-    event.preventDefault();
 
-    const newFirstname = document.getElementById('edit-firstname').value;
-    const newLastname = document.getElementById('edit-lastname').value;
-
-    if (!newFirstname || !newLastname) {
-        showAlert("Bitte beide Felder ausfüllen.",'warning');
-        return;
-    }
-
-    try {
-        const response = await apiCall('/user/profile', 'PUT', {
-            firstname: newFirstname,
-            lastname: newLastname
-        });
-
-        localStorage.setItem('current_user', JSON.stringify(response.user));
-        loadProfile();
-        showAlert("Namen erfolgreich geändert!", 'success');
-        
-        document.getElementById('edit-firstname').value = "";
-        document.getElementById('edit-lastname').value = "";
-    } catch (error) {
-        showAlert(`Fehler beim Ändern der Namen: ${error.message}`, 'danger');
-    }
-}
-
-// --- INIT ---
+// --- 3. INITIALISIERUNG BEIM LADEN DER SEITE ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Prüfen ob User angemeldet ist (Token vorhanden)
-    const token = localStorage.getItem('auth_token');
     
-    // Profil laden
-    if (token) {
-        loadProfile();
-    }
+    // Versuche Profil zu laden (passiert nur auf profile.html)
+    loadProfile();
 
-    // Logout Button
+    // Event Listener für Logout
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
-    // Update Formular aktivieren
-    const updateForm = document.getElementById('update-name-form');
-    if (updateForm) {
-        updateForm.addEventListener('submit', updateName);
-    }
+    // Event Listener für Profil-Update Formular
+    const updateForm = document.getElementById('update-profile-form');
+    if (updateForm) updateForm.addEventListener('submit', updateProfile);
     
-    // Datums-Grenzen für Registrierung
+    // Hilfsfunktion: Datums-Grenzen für Registrierung setzen
     const dateInput = document.getElementById('birthdate');
     if(dateInput) {
         const today = new Date().toISOString().split('T')[0];
-        dateInput.max = today;
+        dateInput.max = today; // Kein Datum in der Zukunft
     }
 });
