@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reisebudget planen</title>
-    <link rel="stylesheet" href="style.css"></head>
-
+    <link rel="stylesheet" href="style.css">
+</head>
 <body class="bg-light">
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-5">
@@ -15,17 +14,31 @@
         </div>
     </nav>
 
-
     <div class="container fade-in-element card register-container jumbotron">
-        <div class="card-header text-white mb-0 text-center h4">Neue Reise Planen </div>
+        <div class="card-header text-white mb-0 text-center h4">Neue Reise Planen</div>
         <div class="card-body p-4">
 
             <form id="trip-form" onsubmit="return saveTrip(event)">
 
                 <div class="mb-3">
-                    <label for="trip-destination" class="form-label fw-bold">Wohin soll es gehen?</label>
-                    <input type="text" class="form-control" id="trip-destination" placeholder="z.B. Paris, Rom, Tokio"
-                        required>
+                    <label for="trip-title" class="form-label fw-bold">Titel der Reise</label>
+                    <input type="text" class="form-control" id="trip-title" placeholder="z.B. Sommerurlaub 2025" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="trip-destination" class="form-label fw-bold">Reiseziel</label>
+                    <input type="text" class="form-control" id="trip-destination" placeholder="z.B. Paris, Rom, Tokio" required>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="trip-start" class="form-label fw-bold">Von</label>
+                        <input type="date" class="form-control" id="trip-start" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="trip-end" class="form-label fw-bold">Bis</label>
+                        <input type="date" class="form-control" id="trip-end" required>
+                    </div>
                 </div>
 
                 <div class="mb-3">
@@ -46,8 +59,8 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
     <script src="script_Effects.js"></script>
     <script src="script_User.js"></script>
 </body>
-
 </html>

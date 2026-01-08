@@ -1,5 +1,5 @@
 /* script_User.js
-   Zentrale Steuerung INKLUSIVE Löschen & Bearbeiten von Reisen
+   Zentrale Steuerung INKLUSIVE Detailansicht und erweiterter Reise-Daten
 */
 
 // --- 1. HILFSFUNKTIONEN (Datenbank) ---
@@ -35,72 +35,17 @@ function calculateAge(birthdateString) {
     return age;
 }
 
-// --- 2. REISE-FUNKTIONEN (NEU) ---
+// --- 2. REISE-FUNKTIONEN ---
 
-// A. Löschen
-function deleteTrip(tripId) {
-    if(!confirm("Möchtest du diese Reise wirklich löschen?")) return;
-
-    let currentUser = JSON.parse(localStorage.getItem('current_user'));
-    
-    // Wir filtern die Reise mit der passenden ID raus
-    currentUser.trips = currentUser.trips.filter(t => t.id != tripId);
-
-    // Speichern & Neu laden
-    localStorage.setItem('current_user', JSON.stringify(currentUser));
-    saveUserToDB(currentUser);
-    loadProfile(); // Liste aktualisieren ohne Reload
-}
-
-// B. Bearbeiten vorbereiten (Modal öffnen)
-function openEditTripModal(tripId) {
-    let currentUser = JSON.parse(localStorage.getItem('current_user'));
-    const trip = currentUser.trips.find(t => t.id == tripId);
-
-    if (trip) {
-        // Daten in das Modal füllen
-        document.getElementById('edit-trip-id').value = trip.id;
-        document.getElementById('edit-trip-dest').value = trip.destination;
-        document.getElementById('edit-trip-budget').value = trip.budget;
-
-        // Modal per Bootstrap öffnen
-        const modal = new bootstrap.Modal(document.getElementById('editTripModal'));
-        modal.show();
-    }
-}
-
-// C. Bearbeiten speichern
-function saveEditedTrip(event) {
-    event.preventDefault(); // Kein Neuladen der Seite
-
-    const tripId = document.getElementById('edit-trip-id').value;
-    const newDest = document.getElementById('edit-trip-dest').value;
-    const newBudget = document.getElementById('edit-trip-budget').value;
-
-    let currentUser = JSON.parse(localStorage.getItem('current_user'));
-
-    // Reise im Array finden und aktualisieren
-    const tripIndex = currentUser.trips.findIndex(t => t.id == tripId);
-    if (tripIndex !== -1) {
-        currentUser.trips[tripIndex].destination = newDest;
-        currentUser.trips[tripIndex].budget = newBudget;
-
-        // Speichern
-        localStorage.setItem('current_user', JSON.stringify(currentUser));
-        saveUserToDB(currentUser);
-        
-        // Modal schließen (Trick: Overlay entfernen und neu laden)
-        // Einfacher: Seite neu laden oder loadProfile aufrufen
-        alert("Reise geändert!");
-        window.location.reload(); 
-    }
-}
-
-// --- 3. HAUPTFUNKTIONEN ---
-
+// A. REISE SPEICHERN (mit neuen Feldern)
 function saveTrip(event) {
     event.preventDefault();
+
+    // Neue Felder abrufen
+    const title = document.getElementById('trip-title').value;
     const dest = document.getElementById('trip-destination').value;
+    const start = document.getElementById('trip-start').value;
+    const end = document.getElementById('trip-end').value;
     const budget = document.getElementById('trip-budget').value;
 
     let currentUser = JSON.parse(localStorage.getItem('current_user'));
@@ -108,23 +53,117 @@ function saveTrip(event) {
 
     if (!currentUser.trips) currentUser.trips = [];
 
+    // Reise Objekt mit allen Daten
     const newTrip = {
+        id: Date.now(), // Eindeutige ID
+        title: title,
         destination: dest,
-        budget: budget,
-        id: Date.now() 
+        startDate: start,
+        endDate: end,
+        budget: budget
     };
+    
     currentUser.trips.push(newTrip);
 
     localStorage.setItem('current_user', JSON.stringify(currentUser));
     saveUserToDB(currentUser);
 
-    alert("Reise gespeichert!");
+    alert("Reise erfolgreich angelegt!");
     window.location.href = 'profile.html';
     return false;
 }
 
+// B. LÖSCHEN
+function deleteTrip(tripId) {
+    if(!confirm("Möchtest du diese Reise wirklich löschen?")) return;
+
+    let currentUser = JSON.parse(localStorage.getItem('current_user'));
+    currentUser.trips = currentUser.trips.filter(t => t.id != tripId);
+
+    localStorage.setItem('current_user', JSON.stringify(currentUser));
+    saveUserToDB(currentUser);
+    
+    // Wenn wir auf der Profilseite sind: Liste neu laden
+    if(document.getElementById('trip-list')) {
+        loadProfile(); 
+    } else {
+        // Wenn wir auf der Detailseite sind: Zurück zum Profil
+        window.location.href = 'profile.html';
+    }
+}
+
+// C. DETAILANSICHT LADEN (Aktualisiert)
+function loadTripDetails() {
+    const titleElement = document.getElementById('detail-title');
+    if (!titleElement) return; 
+
+    const params = new URLSearchParams(window.location.search);
+    const tripId = params.get('id');
+
+    if (!tripId) return;
+
+    const currentUser = JSON.parse(localStorage.getItem('current_user'));
+    if (!currentUser || !currentUser.trips) return;
+
+    const trip = currentUser.trips.find(t => String(t.id) === String(tripId));
+
+    if (trip) {
+        // Basis-Daten
+        document.getElementById('detail-title').textContent = trip.title || "Ohne Titel";
+        document.getElementById('detail-destination').textContent = trip.destination;
+        document.getElementById('detail-budget').textContent = `${trip.budget} €`;
+        
+        let dateText = "Kein Zeitraum";
+        if (trip.startDate && trip.endDate) {
+            const start = new Date(trip.startDate).toLocaleDateString('de-DE');
+            const end = new Date(trip.endDate).toLocaleDateString('de-DE');
+            dateText = `${start} - ${end}`;
+        }
+        document.getElementById('detail-dates').textContent = dateText;
+
+        // NEU: Mitreisende anzeigen
+        const partList = document.getElementById('participant-list');
+        partList.innerHTML = ""; // Liste leeren
+        
+        if (trip.participants && trip.participants.length > 0) {
+            trip.participants.forEach(name => {
+                const li = document.createElement('li');
+                li.className = "list-group-item d-flex justify-content-between align-items-center";
+                li.innerHTML = `
+                    <span>👤 ${name}</span>
+                    <button class="btn btn-sm btn-link text-danger text-decoration-none" onclick="removeParticipant('${trip.id}', '${name}')">&times;</button>
+                `;
+                partList.appendChild(li);
+            });
+        } else {
+            partList.innerHTML = '<li class="list-group-item text-muted fst-italic">Noch keine Mitreisenden.</li>';
+        }
+
+        // Löschen-Button
+        const delBtn = document.getElementById('delete-trip-btn');
+        if(delBtn) delBtn.onclick = function() { deleteTrip(trip.id); };
+    }
+}
+
+// E. ZUSATZ: Mitreisenden entfernen (Optional, aber nützlich)
+function removeParticipant(tripId, nameToRemove) {
+    let currentUser = JSON.parse(localStorage.getItem('current_user'));
+    const trip = currentUser.trips.find(t => String(t.id) === String(tripId));
+    
+    if (trip && trip.participants) {
+        trip.participants = trip.participants.filter(name => name !== nameToRemove);
+        
+        localStorage.setItem('current_user', JSON.stringify(currentUser));
+        saveUserToDB(currentUser);
+        loadTripDetails(); // Neu laden
+    }
+}
+
+// --- 3. HAUPTFUNKTIONEN (User) ---
+
 function registerUser(event) {
     event.preventDefault();
+    /* ... (Identisch zu vorher, gekürzt für Übersicht) ... */
     const firstname = document.getElementById('firstname').value;
     const lastname = document.getElementById('lastname').value;
     const username = document.getElementById('username').value;
@@ -168,6 +207,7 @@ function loginUser(event) {
     }
 }
 
+// PROFIL LADEN (Erstellt jetzt Links zu den Details)
 function loadProfile() {
     const nameField = document.getElementById('profile-name');
     if (!nameField) return; 
@@ -199,7 +239,7 @@ function loadProfile() {
         }
     }
 
-    // C) Reisen anzeigen (MIT BUTTONS)
+    // C) Reisen anzeigen (KLICKBAR!)
     const tripList = document.getElementById('trip-list');
     if (tripList) {
         const myTrips = currentUser.trips || [];
@@ -209,18 +249,21 @@ function loadProfile() {
             tripList.innerHTML = '<p class="text-muted text-center fst-italic">Noch keine Reisen geplant.</p>';
         } else {
             myTrips.forEach(trip => {
+                // Wir erstellen ein DIV als Container
                 const item = document.createElement('div');
-                item.className = "list-group-item d-flex justify-content-between align-items-center";
+                item.className = "list-group-item d-flex justify-content-between align-items-center list-group-item-action";
                 
-                // Wir fügen hier die Buttons ein mit onclick Events
+                // Link zum Draufklicken (spannt über den Text)
+                // Wir nutzen HTML im innerHTML, um den Link zu bauen
                 item.innerHTML = `
-                    <div>
-                        <h5 class="mb-1">✈️ ${trip.destination}</h5>
-                        <small class="text-muted">Budget: <strong>${trip.budget} €</strong></small>
-                    </div>
-                    <div>
-                        <button onclick="openEditTripModal(${trip.id})" class="btn btn-outline-warning btn-sm me-1">✏️</button>
-                        <button onclick="deleteTrip(${trip.id})" class="btn btn-outline-danger btn-sm">🗑️</button>
+                    <a href="trip_details.html?id=${trip.id}" class="text-decoration-none text-body flex-grow-1">
+                        <div>
+                            <h5 class="mb-1">✈️ ${trip.title || trip.destination}</h5>
+                            <small class="text-muted">Ziel: ${trip.destination} | Budget: <strong>${trip.budget} €</strong></small>
+                        </div>
+                    </a>
+                    <div class="ms-2">
+                        <button onclick="event.preventDefault(); deleteTrip(${trip.id})" class="btn btn-outline-danger btn-sm">🗑️</button>
                     </div>
                 `;
                 tripList.appendChild(item);
@@ -274,3 +317,52 @@ document.addEventListener('DOMContentLoaded', () => {
         dateInput.max = today;
     }
 });
+
+// D. MITREISENDE HINZUFÜGEN
+function addParticipant(event) {
+    event.preventDefault();
+    
+    const inputField = document.getElementById('participant-input');
+    const usernameToAdd = inputField.value.trim();
+    
+    // 1. Reise-ID holen
+    const params = new URLSearchParams(window.location.search);
+    const tripId = params.get('id');
+    
+    // 2. Aktuellen User & Reise laden
+    let currentUser = JSON.parse(localStorage.getItem('current_user'));
+    const trip = currentUser.trips.find(t => String(t.id) === String(tripId));
+    
+    if (!trip) return;
+
+    // 3. Validierung: Existiert der User in der Datenbank?
+    // Wir nutzen die Hilfsfunktion userExists(), die wir schon haben
+    if (!userExists(usernameToAdd)) {
+        alert(`Der Benutzer "${usernameToAdd}" wurde nicht gefunden. Bitte prüfe die Schreibweise.`);
+        return false;
+    }
+
+    // 4. Validierung: Ist er schon dabei?
+    // Wir initialisieren das Array, falls es noch nicht existiert
+    if (!trip.participants) trip.participants = [];
+    
+    if (trip.participants.includes(usernameToAdd)) {
+        alert("Diese Person ist bereits hinzugefügt.");
+        return false;
+    }
+    
+    if (usernameToAdd === currentUser.username) {
+        alert("Du bist automatisch dabei, du musst dich nicht hinzufügen :)");
+        return false;
+    }
+
+    // 5. Hinzufügen & Speichern
+    trip.participants.push(usernameToAdd);
+    
+    localStorage.setItem('current_user', JSON.stringify(currentUser));
+    saveUserToDB(currentUser); // Auch in der DB aktualisieren
+    
+    alert(`${usernameToAdd} wurde hinzugefügt!`);
+    inputField.value = ""; // Feld leeren
+    loadTripDetails(); // Ansicht aktualisieren
+}
