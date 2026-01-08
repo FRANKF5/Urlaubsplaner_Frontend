@@ -12402,13 +12402,20 @@ textarea.form-control-lg {
   padding: 3rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
+.jumbotron > .card-header {
+  margin: -3rem -3rem 2rem -3rem; /* zieht ihn nach oben & zu den Seiten */
+  background: var(--bs-primary); /* Beispiel */
+  color: white;
+  font-weight: bold;
+  border-radius: 15px 15px 0 0;
+}
 .register-container {
-            max-width: 550px;
-            margin-top: 40px;
-            margin-bottom: 40px;
+    max-width: 550px;
+    margin: auto;
 }
 
-/* Footer with reversed navbar gradient */
+
+/* Footer */
 footer.bg-primary {
   background-image: none !important;
   background-color: #2fa4e7 !important;
@@ -12453,7 +12460,7 @@ footer.bg-primary {
   }
 }
 
-/* 🔥 Wenn Inhalt da ist → Skeleton aus */
+/* Wenn Inhalt da ist: Skeleton aus */
 .skeleton:not(:empty) {
   background: none;
   color: inherit;
@@ -12472,7 +12479,7 @@ class wird durch eventlistener für alle class="skeleton" gesetzt */
 
 
 /* +++++++++++++++++++ Alert- Popup +++++++++++++++++++ */
-/* Styling für dein Popup */
+/* Styling für das showAlert */
 .custom-alert {
   position: fixed;
   top: 20px;
@@ -12490,4 +12497,21 @@ class wird durch eventlistener für alle class="skeleton" gesetzt */
 .custom-alert.show {
   opacity: 1;
   transform: translateY(0);
+}
+/* Blaue Nachricht */
+.custom-alert-blue {
+  background-color: var(--bs-info);
+}
+
+/* Grüne Nachricht */
+.custom-alert-success {
+  background-color: var(--bs-success);
+}
+/* Gelbe Nachricht */
+.custom-alert-warning {
+  background-color: var(--bs-warning);
+}
+/* Rote Nachricht */
+.custom-alert-danger {
+  background-color: var(--bs-danger);
 }

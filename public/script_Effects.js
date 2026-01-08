@@ -1,4 +1,5 @@
 // Subtle parallax scroll effect
+/*
 window.addEventListener('scroll', () => {
     const scrolled = window.pageYOffset;
     const elements = document.querySelectorAll('.fade-in-element');
@@ -6,7 +7,16 @@ window.addEventListener('scroll', () => {
         el.style.transform = 'translateY(' + scrolled * 0.3 + 'px)';
     });
 });
+*/
 
+window.addEventListener('scroll', () => {
+  const scrolled = window.pageYOffset;
+  const elements = document.getElementsByClassName('fade-in-element');
+
+  for (const el of elements) {
+    el.style.transform = 'translateY(' + scrolled * 0.3 + 'px)';
+  }
+});
 //Footer laden
 document.addEventListener('DOMContentLoaded', () => {
 const footerPlaceholder = document.querySelector('.footer-placeholder');
@@ -41,12 +51,14 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-//Eigene Alert Box
-function showAlert(message, duration = 3000) {
+function showAlert(message, type = 'blue', duration = 3000) {
   const alertDiv = document.createElement('div');
   alertDiv.classList.add('custom-alert');
-  alertDiv.textContent = message;
 
+  // Neue Klasse je nach Typ hinzufügen
+  alertDiv.classList.add(`custom-alert-${type}`);
+
+  alertDiv.textContent = message;
   document.body.appendChild(alertDiv);
 
   requestAnimationFrame(() => {
