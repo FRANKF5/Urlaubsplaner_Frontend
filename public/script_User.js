@@ -91,8 +91,9 @@ function saveEditedTrip(event) {
         
         // Modal schließen (Trick: Overlay entfernen und neu laden)
         // Einfacher: Seite neu laden oder loadProfile aufrufen
-        showAlert("Reise geändert!");
+        
         window.location.reload(); 
+        showAlert("Reise geändert!");
     }
 }
 
