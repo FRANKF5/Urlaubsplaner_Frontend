@@ -1,28 +1,96 @@
 /* script_User.js
-   Zentrale Steuerung INKLUSIVE Detailansicht und erweiterter Reise-Daten
+   Backend-Integration für Urlaubsplaner
+   Verbindung zum Spring Boot Backend auf localhost:8080
 */
 
-// --- 1. HILFSFUNKTIONEN (Datenbank) ---
+// Backend URL Konstante
+const API_BASE_URL = 'http://localhost:8080';
 
-function saveUserToDB(user) {
-    let users = JSON.parse(localStorage.getItem('users_db')) || [];
-    const index = users.findIndex(u => u.username === user.username);
-    if (index !== -1) {
-        users[index] = user;
-    } else {
-        users.push(user);
+// --- 1. TOKEN MANAGEMENT ---
+
+function getToken() {
+    return localStorage.getItem('accessToken');
+}
+
+function getRefreshToken() {
+    return localStorage.getItem('refreshToken');
+}
+
+function setTokens(accessToken, refreshToken) {
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('refreshToken', refreshToken);
+}
+
+function clearTokens() {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+}
+
+// --- 2. API REQUEST HILFSFUNKTIONEN ---
+
+async function apiCall(endpoint, method = 'GET', body = null) {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const options = {
+        method,
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+
+    const token = getToken();
+    if (token) {
+        options.headers['Authorization'] = `Bearer ${token}`;
     }
-    localStorage.setItem('users_db', JSON.stringify(users));
+
+    if (body) {
+        options.body = JSON.stringify(body);
+    }
+
+    try {
+        const response = await fetch(url, options);
+        
+        // Wenn Token abgelaufen, Refresh versuchen
+        if (response.status === 401) {
+            if (await refreshToken()) {
+                return apiCall(endpoint, method, body); // Retry mit neuem Token
+            } else {
+                clearTokens();
+                window.location.href = 'login.html';
+                return null;
+            }
+        }
+
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('API Call Error:', error);
+        return null;
+    }
 }
 
-function findUser(username, password) {
-    let users = JSON.parse(localStorage.getItem('users_db')) || [];
-    return users.find(u => u.username === username && u.password === password);
-}
+async function refreshToken() {
+    const refreshTok = getRefreshToken();
+    if (!refreshTok) return false;
 
-function userExists(username) {
-    let users = JSON.parse(localStorage.getItem('users_db')) || [];
-    return users.some(u => u.username === username);
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken: refreshTok })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            setTokens(data.accessToken, data.refreshToken);
+            return true;
+        }
+    } catch (error) {
+        console.error('Token refresh failed:', error);
+    }
+    return false;
 }
 
 function calculateAge(birthdateString) {
@@ -35,138 +103,47 @@ function calculateAge(birthdateString) {
     return age;
 }
 
-// --- 2. REISE-FUNKTIONEN ---
+// --- 5. REISE FUNKTIONEN ---
 
-// A. REISE SPEICHERN (mit neuen Feldern)
+// TODO: Trip-API-Endpoints vom Backend implementieren
 function saveTrip(event) {
     event.preventDefault();
-
-    // Neue Felder abrufen
-    const title = document.getElementById('trip-title').value;
-    const dest = document.getElementById('trip-destination').value;
-    const start = document.getElementById('trip-start').value;
-    const end = document.getElementById('trip-end').value;
-    const budget = document.getElementById('trip-budget').value;
-
-    let currentUser = JSON.parse(localStorage.getItem('current_user'));
-    if (!currentUser) return window.location.href = 'login.html';
-
-    if (!currentUser.trips) currentUser.trips = [];
-
-    // Reise Objekt mit allen Daten
-    const newTrip = {
-        id: Date.now(), // Eindeutige ID
-        title: title,
-        destination: dest,
-        startDate: start,
-        endDate: end,
-        budget: budget
-    };
-    
-    currentUser.trips.push(newTrip);
-
-    localStorage.setItem('current_user', JSON.stringify(currentUser));
-    saveUserToDB(currentUser);
-
-    alert("Reise erfolgreich angelegt!");
-    window.location.href = 'profile.html';
+    alert("Trip-Speicherung wird vom Backend verwaltet - noch zu implementieren");
     return false;
 }
 
-// B. LÖSCHEN
 function deleteTrip(tripId) {
     if(!confirm("Möchtest du diese Reise wirklich löschen?")) return;
-
-    let currentUser = JSON.parse(localStorage.getItem('current_user'));
-    currentUser.trips = currentUser.trips.filter(t => t.id != tripId);
-
-    localStorage.setItem('current_user', JSON.stringify(currentUser));
-    saveUserToDB(currentUser);
-    
-    // Wenn wir auf der Profilseite sind: Liste neu laden
-    if(document.getElementById('trip-list')) {
-        loadProfile(); 
-    } else {
-        // Wenn wir auf der Detailseite sind: Zurück zum Profil
-        window.location.href = 'profile.html';
-    }
+    // TODO: DELETE /api/trip/{id}
+    alert("Trip-Löschung wird vom Backend verwaltet - noch zu implementieren");
 }
 
-// C. DETAILANSICHT LADEN (Aktualisiert)
 function loadTripDetails() {
     const titleElement = document.getElementById('detail-title');
-    if (!titleElement) return; 
-
-    const params = new URLSearchParams(window.location.search);
-    const tripId = params.get('id');
-
-    if (!tripId) return;
-
-    const currentUser = JSON.parse(localStorage.getItem('current_user'));
-    if (!currentUser || !currentUser.trips) return;
-
-    const trip = currentUser.trips.find(t => String(t.id) === String(tripId));
-
-    if (trip) {
-        // Basis-Daten
-        document.getElementById('detail-title').textContent = trip.title || "Ohne Titel";
-        document.getElementById('detail-destination').textContent = trip.destination;
-        document.getElementById('detail-budget').textContent = `${trip.budget} €`;
-        
-        let dateText = "Kein Zeitraum";
-        if (trip.startDate && trip.endDate) {
-            const start = new Date(trip.startDate).toLocaleDateString('de-DE');
-            const end = new Date(trip.endDate).toLocaleDateString('de-DE');
-            dateText = `${start} - ${end}`;
-        }
-        document.getElementById('detail-dates').textContent = dateText;
-
-        // NEU: Mitreisende anzeigen
-        const partList = document.getElementById('participant-list');
-        partList.innerHTML = ""; // Liste leeren
-        
-        if (trip.participants && trip.participants.length > 0) {
-            trip.participants.forEach(name => {
-                const li = document.createElement('li');
-                li.className = "list-group-item d-flex justify-content-between align-items-center";
-                li.innerHTML = `
-                    <span>👤 ${name}</span>
-                    <button class="btn btn-sm btn-link text-danger text-decoration-none" onclick="removeParticipant('${trip.id}', '${name}')">&times;</button>
-                `;
-                partList.appendChild(li);
-            });
-        } else {
-            partList.innerHTML = '<li class="list-group-item text-muted fst-italic">Noch keine Mitreisenden.</li>';
-        }
-
-        // Löschen-Button
-        const delBtn = document.getElementById('delete-trip-btn');
-        if(delBtn) delBtn.onclick = function() { deleteTrip(trip.id); };
-    }
+    if (!titleElement) return;
+    // TODO: Trip-Details vom Backend laden
+    titleElement.textContent = "Trip-Details werden vom Backend geladen...";
 }
 
-// E. ZUSATZ: Mitreisenden entfernen (Optional, aber nützlich)
 function removeParticipant(tripId, nameToRemove) {
-    let currentUser = JSON.parse(localStorage.getItem('current_user'));
-    const trip = currentUser.trips.find(t => String(t.id) === String(tripId));
-
-    if (trip && trip.participants) {
-        trip.participants = trip.participants.filter(name => name !== nameToRemove);
-
-        localStorage.setItem('current_user', JSON.stringify(currentUser));
-        saveUserToDB(currentUser);
-        loadTripDetails(); // Neu laden
-    }
+    // TODO: DELETE /api/trip/{id}/participant
+    alert("Teilnehmer-Verwaltung wird vom Backend verwaltet - noch zu implementieren");
 }
 
-// --- 3. HAUPTFUNKTIONEN (User) ---
-
-function registerUser(event) {
+function addParticipant(event) {
     event.preventDefault();
-    /* ... (Identisch zu vorher, gekürzt für Übersicht) ... */
+    // TODO: POST /api/trip/{id}/participant
+    alert("Teilnehmer-Verwaltung wird vom Backend verwaltet - noch zu implementieren");
+    return false;
+}
+
+// --- 3. AUTHENTIFIZIERUNG ---
+
+async function registerUser(event) {
+    event.preventDefault();
+    
     const firstname = document.getElementById('firstname').value;
     const lastname = document.getElementById('lastname').value;
-    const username = document.getElementById('username').value;
     const email = document.getElementById('email').value;
     const birthdate = document.getElementById('birthdate').value;
     const password = document.getElementById('password').value;
@@ -176,135 +153,168 @@ function registerUser(event) {
         document.getElementById('passwordError').style.display = 'block';
         return false;
     }
-    if (userExists(username)) {
-        alert("Benutzername ist vergeben!");
-        return false;
-    }
 
-    const newUser = {
-        firstname, lastname, username, email, birthdate, password,
-        address: "", destination: "", activities: [], trips: []
+    const registrationData = {
+        personalData: {
+            firstname,
+            lastname,
+            birthdate,
+            address: "",
+            destination: "",
+            activities: []
+        },
+        authData: {
+            mail: email,
+            password
+        }
     };
 
-    saveUserToDB(newUser);
-    alert("Registrierung erfolgreich!");
-    window.location.href = 'login.html';
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(registrationData)
+        });
+
+        if (response.status === 201) {
+            alert("Registrierung erfolgreich! Bitte überprüfe deine E-Mail zur Verifizierung.");
+            window.location.href = 'login.html';
+        } else {
+            alert("Registrierung fehlgeschlagen. Email möglicherweise bereits registriert.");
+        }
+    } catch (error) {
+        console.error('Registration error:', error);
+        alert("Fehler bei der Registrierung");
+    }
     return false;
 }
 
-function loginUser(event) {
+async function loginUser(event) {
     event.preventDefault();
-    const username = document.getElementById('username').value;
+    
+    const email = document.getElementById('email')?.value || document.getElementById('username')?.value;
     const password = document.getElementById('password').value;
-    const user = findUser(username, password);
 
-    if (user) {
-        localStorage.setItem('current_user', JSON.stringify(user));
-        window.location.href = 'profile.html';
-    } else {
-        document.getElementById('errorMessage').style.display = 'block';
-        document.getElementById('errorMessage').textContent = "Falsche Daten.";
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                mail: email,
+                password
+            })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            setTokens(data.accessToken, data.refreshToken);
+            window.location.href = 'profile.html';
+        } else {
+            const errorMsg = document.getElementById('errorMessage');
+            if (errorMsg) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = "Falsche Anmeldedaten.";
+            }
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        alert("Fehler beim Login");
     }
+    return false;
 }
 
-// PROFIL LADEN (Erstellt jetzt Links zu den Details)
-function loadProfile() {
-    const nameField = document.getElementById('profile-name');
-    if (!nameField) return; 
+// --- 4. PROFIL FUNKTIONEN ---
 
-    const currentUser = JSON.parse(localStorage.getItem('current_user'));
-    if (!currentUser) return window.location.href = 'login.html';
+async function loadProfile() {
+    const nameField = document.getElementById('profile-name');
+    if (!nameField) return;
+
+    const token = getToken();
+    if (!token) return window.location.href = 'login.html';
+
+    const user = await apiCall('/api/user/info');
+    if (!user) return window.location.href = 'login.html';
 
     // A) Profil Header
-    const age = calculateAge(currentUser.birthdate);
-    nameField.innerHTML = `${currentUser.firstname} ${currentUser.lastname} <small class="text-muted">(${currentUser.username})</small>`;
+    const age = calculateAge(user.personalData?.birthdate);
+    nameField.innerHTML = `${user.personalData?.firstname || ''} ${user.personalData?.lastname || ''} <small class="text-muted">(${user.email})</small>`;
     
     const infoField = document.getElementById('profile-info');
-    if(infoField) infoField.innerHTML = `📧 ${currentUser.email} &nbsp;|&nbsp; 🎂 ${age} Jahre alt`;
+    if(infoField) infoField.innerHTML = `📧 ${user.email} &nbsp;|&nbsp; 🎂 ${age} Jahre alt`;
 
     // B) Formular füllen
     const editFirst = document.getElementById('edit-firstname');
     if (editFirst) {
-        editFirst.value = currentUser.firstname || "";
-        document.getElementById('edit-lastname').value = currentUser.lastname || "";
-        document.getElementById('edit-address').value = currentUser.address || "";
-        document.getElementById('edit-destination').value = currentUser.destination || "";
+        editFirst.value = user.personalData?.firstname || "";
+        document.getElementById('edit-lastname').value = user.personalData?.lastname || "";
+        document.getElementById('edit-address').value = user.personalData?.address || "";
+        document.getElementById('edit-destination').value = user.personalData?.destination || "";
         
         const editAct = document.getElementById('edit-activities');
         if (editAct) {
-            const myActivities = currentUser.activities || [];
+            const myActivities = user.personalData?.activities || [];
             for (let i = 0; i < editAct.options.length; i++) {
-                if (myActivities.includes(editAct.options[i].value)) editAct.options[i].selected = true;
+                editAct.options[i].selected = myActivities.includes(editAct.options[i].value);
             }
         }
     }
 
-    // C) Reisen anzeigen (KLICKBAR!)
+    // C) Reisen anzeigen
     const tripList = document.getElementById('trip-list');
     if (tripList) {
-        const myTrips = currentUser.trips || [];
-        tripList.innerHTML = ""; 
-        
-        if (myTrips.length === 0) {
-            tripList.innerHTML = '<p class="text-muted text-center fst-italic">Noch keine Reisen geplant.</p>';
-        } else {
-            myTrips.forEach(trip => {
-                // Wir erstellen ein DIV als Container
-                const item = document.createElement('div');
-                item.className = "list-group-item d-flex justify-content-between align-items-center list-group-item-action";
-                
-                // Link zum Draufklicken (spannt über den Text)
-                // Wir nutzen HTML im innerHTML, um den Link zu bauen
-                item.innerHTML = `
-                    <a href="trip_details.html?id=${trip.id}" class="text-decoration-none text-body flex-grow-1">
-                        <div>
-                            <h5 class="mb-1">✈️ ${trip.title || trip.destination}</h5>
-                            <small class="text-muted">Ziel: ${trip.destination} | Budget: <strong>${trip.budget} €</strong></small>
-                        </div>
-                    </a>
-                    <div class="ms-2">
-                        <button onclick="event.preventDefault(); deleteTrip(${trip.id})" class="btn btn-outline-danger btn-sm">🗑️</button>
-                    </div>
-                `;
-                tripList.appendChild(item);
-            });
-        }
+        // TODO: Trips vom Backend laden
+        tripList.innerHTML = '<p class="text-muted text-center fst-italic">Trip-Loading in Entwicklung...</p>';
     }
 }
 
-function updateProfile(event) {
+async function updateProfile(event) {
     event.preventDefault();
-    let currentUser = JSON.parse(localStorage.getItem('current_user'));
-
-    currentUser.firstname = document.getElementById('edit-firstname').value;
-    currentUser.lastname = document.getElementById('edit-lastname').value;
-    currentUser.address = document.getElementById('edit-address').value;
-    currentUser.destination = document.getElementById('edit-destination').value;
+    
+    const personalData = {
+        firstname: document.getElementById('edit-firstname').value,
+        lastname: document.getElementById('edit-lastname').value,
+        address: document.getElementById('edit-address').value,
+        destination: document.getElementById('edit-destination').value,
+        activities: []
+    };
 
     const activitiesSelect = document.getElementById('edit-activities');
-    const selectedActivities = [];
     if (activitiesSelect) {
         for (let i = 0; i < activitiesSelect.options.length; i++) {
-            if (activitiesSelect.options[i].selected) selectedActivities.push(activitiesSelect.options[i].value);
+            if (activitiesSelect.options[i].selected) {
+                personalData.activities.push(activitiesSelect.options[i].value);
+            }
         }
     }
-    currentUser.activities = selectedActivities;
 
-    localStorage.setItem('current_user', JSON.stringify(currentUser));
-    saveUserToDB(currentUser);
-    loadProfile();
-    alert("Profil aktualisiert!");
+    const success = await apiCall('/api/user/info', 'PATCH', personalData);
+    if (success) {
+        alert("Profil aktualisiert!");
+        loadProfile();
+    } else {
+        alert("Fehler beim Update");
+    }
 }
 
-function logout() {
-    localStorage.removeItem('current_user');
+async function logout() {
+    try {
+        const refreshTok = getRefreshToken();
+        if (refreshTok) {
+            await apiCall('/api/user/logout', 'POST', { refreshToken: refreshTok });
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+    }
+    clearTokens();
     window.location.href = 'index.html';
 }
 
-// --- INIT ---
+// --- 6. INITIALIZATION ---
+
 document.addEventListener('DOMContentLoaded', () => {
     loadProfile();
     loadTripDetails();
+    
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
@@ -321,48 +331,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // D. MITREISENDE HINZUFÜGEN
 function addParticipant(event) {
     event.preventDefault();
-    
     const inputField = document.getElementById('participant-input');
     const usernameToAdd = inputField.value.trim();
     
-    // 1. Reise-ID holen
-    const params = new URLSearchParams(window.location.search);
-    const tripId = params.get('id');
-    
-    // 2. Aktuellen User & Reise laden
-    let currentUser = JSON.parse(localStorage.getItem('current_user'));
-    const trip = currentUser.trips.find(t => String(t.id) === String(tripId));
-    
-    if (!trip) return;
-
-    // 3. Validierung: Existiert der User in der Datenbank?
-    // Wir nutzen die Hilfsfunktion userExists(), die wir schon haben
-    if (!userExists(usernameToAdd)) {
-        alert(`Der Benutzer "${usernameToAdd}" wurde nicht gefunden. Bitte prüfe die Schreibweise.`);
-        return false;
-    }
-
-    // 4. Validierung: Ist er schon dabei?
-    // Wir initialisieren das Array, falls es noch nicht existiert
-    if (!trip.participants) trip.participants = [];
-    
-    if (trip.participants.includes(usernameToAdd)) {
-        alert("Diese Person ist bereits hinzugefügt.");
-        return false;
-    }
-    
-    if (usernameToAdd === currentUser.username) {
-        alert("Du bist automatisch dabei, du musst dich nicht hinzufügen :)");
-        return false;
-    }
-
-    // 5. Hinzufügen & Speichern
-    trip.participants.push(usernameToAdd);
-    
-    localStorage.setItem('current_user', JSON.stringify(currentUser));
-    saveUserToDB(currentUser); // Auch in der DB aktualisieren
-    
-    alert(`${usernameToAdd} wurde hinzugefügt!`);
-    inputField.value = ""; // Feld leeren
-    loadTripDetails(); // Ansicht aktualisieren
+    // TODO: POST /api/trip/{id}/participant mit usernameToAdd
+    alert("Teilnehmer-Verwaltung wird vom Backend verwaltet - noch zu implementieren");
+    return false;
 }
