@@ -304,7 +304,7 @@ function logout() {
 // --- INIT ---
 document.addEventListener('DOMContentLoaded', () => {
     loadProfile();
-
+    loadTripDetails();
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
