@@ -1,6 +1,0 @@
-@Autowired
-private Mailer mailer;
-
-public void test() {
-    mailer.sendEmail("holly.day.planer@gmail.com", "Test", "Das ist eine Testmail!");
-}

@@ -156,9 +156,9 @@ async function registerUser(event) {
 
     const registrationData = {
         personalData: {
-            firstname,
-            lastname,
-            birthdate,
+            firstName: firstname,
+            lastName: lastname,
+            birthDate: birthdate,
             address: "",
             destination: "",
             activities: []
@@ -236,17 +236,17 @@ async function loadProfile() {
     if (!user) return window.location.href = 'login.html';
 
     // A) Profil Header
-    const age = calculateAge(user.personalData?.birthdate);
-    nameField.innerHTML = `${user.personalData?.firstname || ''} ${user.personalData?.lastname || ''} <small class="text-muted">(${user.email})</small>`;
-    
+    const age = calculateAge(user.personalData?.birthDate);
+    nameField.innerHTML = `${user.personalData?.firstName || ''} ${user.personalData?.lastName || ''} <small class="text-muted">(${user.email})</small>`;
+
     const infoField = document.getElementById('profile-info');
     if(infoField) infoField.innerHTML = `📧 ${user.email} &nbsp;|&nbsp; 🎂 ${age} Jahre alt`;
 
     // B) Formular füllen
     const editFirst = document.getElementById('edit-firstname');
     if (editFirst) {
-        editFirst.value = user.personalData?.firstname || "";
-        document.getElementById('edit-lastname').value = user.personalData?.lastname || "";
+        editFirst.value = user.personalData?.firstName || "";
+        document.getElementById('edit-lastname').value = user.personalData?.lastName || "";
         document.getElementById('edit-address').value = user.personalData?.address || "";
         document.getElementById('edit-destination').value = user.personalData?.destination || "";
         
@@ -271,8 +271,8 @@ async function updateProfile(event) {
     event.preventDefault();
     
     const personalData = {
-        firstname: document.getElementById('edit-firstname').value,
-        lastname: document.getElementById('edit-lastname').value,
+        firstName: document.getElementById('edit-firstname').value,
+        lastName: document.getElementById('edit-lastname').value,
         address: document.getElementById('edit-address').value,
         destination: document.getElementById('edit-destination').value,
         activities: []

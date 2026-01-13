@@ -1,0 +1,44 @@
+{
+  "users": {
+    "1": {
+      "userId": 1,
+      "authId": 1,
+      "firstName": "Test",
+      "lastName": "User",
+      "birthDate": "1995-05-20",
+      "gender": null,
+      "avatarUrl": null,
+      "userName": null
+    }
+  },
+  "auth": {
+    "1": {
+      "id": 1,
+      "email": "test@example.com",
+      "password_hash": "$2b$12$S.B6QLjdtJwYNxWTkZyPbOwgCwI795ghpNx4N6j7BU32yIXDsYtGS",
+      "confirmed_at": null,
+      "verification_code": "Y_WTUvCDz1dv8gIV3Np_vA"
+    }
+  },
+  "tokens": {
+    "m62k1Qq6VKOBsY5eNDcfp9zr41BHy_PBtsBxbuJFRME": {
+      "authId": 1,
+      "expireDate": "2026-02-12T16:48:50.030249"
+    },
+    "i9TYUOy7yimH-vClULCbAVbTkwHLcaoa1x3INvAlRow": {
+      "authId": 1,
+      "expireDate": "2026-02-12T17:05:29.794347"
+    },
+    "Fb0oNZ_CjFJAHpv47w13ZJa14dsD1GQhAWlLJcW0XM8": {
+      "authId": 1,
+      "expireDate": "2026-02-12T17:08:21.043146"
+    },
+    "z7_Dc-SYwniGYxfkzjnTSs6-otkx0ZUJpIR3rY-yElc": {
+      "authId": 1,
+      "expireDate": "2026-02-12T17:11:53.893913"
+    }
+  },
+  "verification_codes": {},
+  "next_user_id": 2,
+  "next_auth_id": 2
+}
