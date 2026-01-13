@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reise-Erinnerung</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.5;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+        .email-header {
+            background: linear-gradient(135deg, #50b3eb 0%, #2fa4e7 60%, #2c9ad9 100%);
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 15px 15px 0 0;
+        }
+        .email-header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .email-body {
+            padding: 40px 30px;
+            color: #495057;
+        }
+        .email-body h2 {
+            color: #2fa4e7;
+            font-size: 24px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        .email-body p {
+            margin: 15px 0;
+            font-size: 16px;
+        }
+        .countdown-box {
+            background: linear-gradient(135deg, rgba(47, 164, 231, 0.1) 0%, rgba(47, 164, 231, 0.05) 100%);
+            border: 2px solid #2fa4e7;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        .countdown-box .days {
+            font-size: 48px;
+            font-weight: 700;
+            color: #2fa4e7;
+            margin: 10px 0;
+        }
+        .countdown-box .label {
+            font-size: 18px;
+            color: #495057;
+            font-weight: 500;
+        }
+        .trip-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(47, 164, 231, 0.2);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .trip-card h3 {
+            color: #2fa4e7;
+            margin-top: 0;
+            font-size: 22px;
+        }
+        .trip-details {
+            background-color: rgba(47, 164, 231, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .trip-detail-row {
+            display: table;
+            width: 100%;
+            margin: 8px 0;
+        }
+        .trip-detail-label {
+            display: table-cell;
+            font-weight: 600;
+            color: #495057;
+            width: 120px;
+        }
+        .trip-detail-value {
+            display: table-cell;
+            color: #495057;
+        }
+        .checklist-box {
+            background-color: rgba(233, 236, 239, 0.5);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .checklist-box h4 {
+            color: #2fa4e7;
+            margin-top: 0;
+            font-size: 18px;
+        }
+        .checklist-box ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .checklist-box li {
+            margin: 8px 0;
+            color: #495057;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #2fa4e7;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 6px;
+            font-weight: 500;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .cta-button:hover {
+            background-color: #2c9ad9;
+        }
+        .participants-info {
+            background-color: rgba(47, 164, 231, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .email-footer {
+            background-color: rgba(73, 80, 87, 0.03);
+            padding: 25px 30px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+            border-radius: 0 0 15px 15px;
+        }
+        .email-footer a {
+            color: #2fa4e7;
+            text-decoration: none;
+        }
+        .divider {
+            height: 1px;
+            background-color: #e9ecef;
+            margin: 25px 0;
+        }
+        .emoji {
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+        <tr>
+            <td style="padding: 20px 0;">
+                <div class="email-container">
+                    <!-- Header -->
+                    <div class="email-header">
+                        <h1>✈️ Urlaubsplaner</h1>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="email-body">
+                        <h2>Deine Reise steht vor der Tür! 🎒</h2>
+
+                        <p>Hallo {{username}},</p>
+
+                        <p>Es ist bald soweit! Deine Reise beginnt in Kürze.</p>
+
+                        <!-- Countdown -->
+                        <div class="countdown-box">
+                            <div class="label">Noch</div>
+                            <div class="days">{{daysUntilTrip}}</div>
+                            <div class="label">Tag{{daysUntilTripPlural}} bis zum Abflug!</div>
+                        </div>
+
+                        <!-- Trip Card -->
+                        <div class="trip-card">
+                            <h3>{{tripTitle}}</h3>
+
+                            <div class="trip-details">
+                                <div class="trip-detail-row">
+                                    <span class="trip-detail-label"><span class="emoji">🌍</span> Ziel:</span>
+                                    <span class="trip-detail-value">{{destination}}</span>
+                                </div>
+                                <div class="trip-detail-row">
+                                    <span class="trip-detail-label"><span class="emoji">📅</span> Abreise:</span>
+                                    <span class="trip-detail-value">{{startDate}}</span>
+                                </div>
+                                <div class="trip-detail-row">
+                                    <span class="trip-detail-label"><span class="emoji">🏁</span> Rückkehr:</span>
+                                    <span class="trip-detail-value">{{endDate}}</span>
+                                </div>
+                                <div class="trip-detail-row">
+                                    <span class="trip-detail-label"><span class="emoji">💰</span> Budget:</span>
+                                    <span class="trip-detail-value">{{budget}} €</span>
+                                </div>
+                            </div>
+
+                            <div class="participants-info">
+                                <strong>👥 Mitreisende:</strong> {{participantsList}}
+                            </div>
+                        </div>
+
+                        <!-- Checklist -->
+                        <div class="checklist-box">
+                            <h4>✓ Letzte Vorbereitungen:</h4>
+                            <ul>
+                                <li>Reisedokumente (Pass, Visum, Tickets) überprüfen</li>
+                                <li>Koffer packen und Gewichtslimits beachten</li>
+                                <li>Reiseversicherung bestätigen</li>
+                                <li>Wichtige Kontakte speichern</li>
+                                <li>Unterkunft und Transfers bestätigen</li>
+                                <li>Währung wechseln oder Kreditkarte aktivieren</li>
+                            </ul>
+                        </div>
+
+                        <p>Überprüfe alle Details noch einmal in deinem Urlaubsplaner-Account:</p>
+
+                        <div style="text-align: center;">
+                            <a href="{{tripDetailsUrl}}" class="cta-button">Reisedetails ansehen</a>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <p style="font-size: 16px; text-align: center;">
+                            <strong>Wir wünschen dir eine fantastische Reise und unvergessliche Erlebnisse! 🌟</strong>
+                        </p>
+
+                        <p style="margin-top: 30px;">
+                            Gute Reise und viel Spaß!<br>
+                            <strong>Dein Urlaubsplaner-Team</strong>
+                        </p>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="email-footer">
+                        <p>Diese E-Mail wurde an <strong>{{email}}</strong> gesendet.</p>
+                        <p>Du erhältst diese Erinnerung, weil deine Reise "{{tripTitle}}" bald beginnt.</p>
+                        <p style="margin-top: 15px;">
+                            <a href="{{appUrl}}">Zur Anwendung</a>
+                        </p>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

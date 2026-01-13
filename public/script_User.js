@@ -1,71 +1,96 @@
 /* script_User.js
-   Zentrale Steuerung INKLUSIVE Löschen & Bearbeiten von Reisen
+   Backend-Integration für Urlaubsplaner
+   Verbindung zum Spring Boot Backend auf localhost:8080
 */
 
-// --- 1. HILFSFUNKTIONEN (Datenbank) ---
-// API-Konfiguration: passe `API_BASE` an dein Backend an
-const API_BASE = 'http://10.75.177.97'; // z.B. 'http://localhost:3000' oder ''
-const ACCESS_TOKEN_KEY = 'accessToken';
-const REFRESH_TOKEN_KEY = 'refreshToken';
+// Backend URL Konstante
+const API_BASE_URL = 'http://localhost:8080';
 
-async function apiRequest(path, method = 'GET', body = null, auth = true) {
-    const headers = {};
-    let token = localStorage.getItem(ACCESS_TOKEN_KEY);
-    if (body) headers['Content-Type'] = 'application/json';
-    if (auth && token) headers['Authorization'] = `Bearer ${token}`;
+// --- 1. TOKEN MANAGEMENT ---
 
-    try {
-        const res = await fetch(`${API_BASE}${path}`, {
-            method,
-            headers,
-            body: body ? JSON.stringify(body) : null
-        });
-        const text = await res.text();
-        let data = null;
-        try { data = text ? JSON.parse(text) : null; } catch(e) { data = text; }
-        return { ok: res.ok, status: res.status, data };
-    } catch (err) {
-        return { ok: false, status: 0, error: err };
-    }
-}
-
-function saveTokens(accessToken, refreshToken) {
-    if (accessToken) localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
-    if (refreshToken) localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
-}
-
-function clearTokens() {
-    localStorage.removeItem(ACCESS_TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
-}
-
-function getAccessToken() {
-    return localStorage.getItem(ACCESS_TOKEN_KEY);
+function getToken() {
+    return localStorage.getItem('accessToken');
 }
 
 function getRefreshToken() {
-    return localStorage.getItem(REFRESH_TOKEN_KEY);
+    return localStorage.getItem('refreshToken');
 }
 
-function saveUserToDB(user) {
-    let users = JSON.parse(localStorage.getItem('users_db')) || [];
-    const index = users.findIndex(u => u.username === user.username);
-    if (index !== -1) {
-        users[index] = user;
-    } else {
-        users.push(user);
+function setTokens(accessToken, refreshToken) {
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('refreshToken', refreshToken);
+}
+
+function clearTokens() {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+}
+
+// --- 2. API REQUEST HILFSFUNKTIONEN ---
+
+async function apiCall(endpoint, method = 'GET', body = null) {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const options = {
+        method,
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+
+    const token = getToken();
+    if (token) {
+        options.headers['Authorization'] = `Bearer ${token}`;
     }
-    localStorage.setItem('users_db', JSON.stringify(users));
+
+    if (body) {
+        options.body = JSON.stringify(body);
+    }
+
+    try {
+        const response = await fetch(url, options);
+        
+        // Wenn Token abgelaufen, Refresh versuchen
+        if (response.status === 401) {
+            if (await refreshToken()) {
+                return apiCall(endpoint, method, body); // Retry mit neuem Token
+            } else {
+                clearTokens();
+                window.location.href = 'login.html';
+                return null;
+            }
+        }
+
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('API Call Error:', error);
+        return null;
+    }
 }
 
-function findUser(username, password) {
-    let users = JSON.parse(localStorage.getItem('users_db')) || [];
-    return users.find(u => u.username === username && u.password === password);
-}
+async function refreshToken() {
+    const refreshTok = getRefreshToken();
+    if (!refreshTok) return false;
 
-function userExists(username) {
-    let users = JSON.parse(localStorage.getItem('users_db')) || [];
-    return users.some(u => u.username === username);
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken: refreshTok })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            setTokens(data.accessToken, data.refreshToken);
+            return true;
+        }
+    } catch (error) {
+        console.error('Token refresh failed:', error);
+    }
+    return false;
 }
 
 function calculateAge(birthdateString) {
@@ -78,33 +103,27 @@ function calculateAge(birthdateString) {
     return age;
 }
 
-// --- 2. REISE-FUNKTIONEN (NEU) ---
+// --- 5. REISE FUNKTIONEN ---
 
-// A. Löschen
+// TODO: Trip-API-Endpoints vom Backend implementieren
+function saveTrip(event) {
+    event.preventDefault();
+    alert("Trip-Speicherung wird vom Backend verwaltet - noch zu implementieren");
+    return false;
+}
+
 function deleteTrip(tripId) {
     if(!confirm("Möchtest du diese Reise wirklich löschen?")) return;
 
     let currentUser = JSON.parse(localStorage.getItem('current_user'));
+    
+    // Wir filtern die Reise mit der passenden ID raus
+    currentUser.trips = currentUser.trips.filter(t => t.id != tripId);
 
-    // Versuche API-Call, sonst lokal löschen
-    (async () => {
-        const token = getAccessToken();
-        if (token) {
-            const res = await apiRequest('/api/user/trips', 'DELETE', { id: tripId });
-            if (res.ok) {
-                // Trip wurde gelöscht, Profil neu laden
-                await loadProfile();
-                return;
-            }
-        }
-
-        // Fallback: lokal löschen
-        currentUser = currentUser || {};
-        currentUser.trips = (currentUser.trips || []).filter(t => t.id != tripId);
-        localStorage.setItem('current_user', JSON.stringify(currentUser));
-        saveUserToDB(currentUser);
-        loadProfile();
-    })();
+    // Speichern & Neu laden
+    localStorage.setItem('current_user', JSON.stringify(currentUser));
+    saveUserToDB(currentUser);
+    loadProfile(); // Liste aktualisieren ohne Reload
 }
 
 // B. Bearbeiten vorbereiten (Modal öffnen)
@@ -140,24 +159,14 @@ function saveEditedTrip(event) {
         currentUser.trips[tripIndex].destination = newDest;
         currentUser.trips[tripIndex].budget = newBudget;
 
-        (async () => {
-            const token = getAccessToken();
-            if (token) {
-                const tripData = currentUser.trips[tripIndex];
-                const res = await apiRequest('/api/user/trips', 'PATCH', tripData);
-                if (res.ok) {
-                    window.location.reload();
-                    alert('Reise geändert!');
-                    return;
-                }
-            }
-
-            // Fallback: lokal speichern
-            localStorage.setItem('current_user', JSON.stringify(currentUser));
-            saveUserToDB(currentUser);
-            window.location.reload();
-            alert('Reise geändert!');
-        })();
+        // Speichern
+        localStorage.setItem('current_user', JSON.stringify(currentUser));
+        saveUserToDB(currentUser);
+        
+        // Modal schließen (Trick: Overlay entfernen und neu laden)
+        // Einfacher: Seite neu laden oder loadProfile aufrufen
+        alert("Reise geändert!");
+        window.location.reload(); 
     }
 }
 
@@ -167,6 +176,7 @@ function saveTrip(event) {
     event.preventDefault();
     const dest = document.getElementById('trip-destination').value;
     const budget = document.getElementById('trip-budget').value;
+
     let currentUser = JSON.parse(localStorage.getItem('current_user'));
     if (!currentUser) return window.location.href = 'login.html';
 
@@ -175,32 +185,21 @@ function saveTrip(event) {
     const newTrip = {
         destination: dest,
         budget: budget,
-        id: Date.now()
+        id: Date.now() 
     };
+    currentUser.trips.push(newTrip);
 
-    (async () => {
-        const token = getAccessToken();
-        if (token) {
-            const res = await apiRequest('/api/user/trips', 'POST', newTrip);
-            if (res.ok) {
-                alert('Reise gespeichert!');
-                window.location.href = 'profile.html';
-                return false;
-            }
-        }
+    localStorage.setItem('current_user', JSON.stringify(currentUser));
+    saveUserToDB(currentUser);
 
-        // Fallback lokal
-        currentUser.trips.push(newTrip);
-        localStorage.setItem('current_user', JSON.stringify(currentUser));
-        saveUserToDB(currentUser);
-        alert('Reise gespeichert!');
-        window.location.href = 'profile.html';
-        return false;
-    })();
+    alert("Reise gespeichert!");
+    window.location.href = 'profile.html';
+    return false;
 }
 
-async function registerUser(event) {
+function registerUser(event) {
     event.preventDefault();
+    
     const firstname = document.getElementById('firstname').value;
     const lastname = document.getElementById('lastname').value;
     const email = document.getElementById('email').value;
@@ -212,201 +211,113 @@ async function registerUser(event) {
         document.getElementById('passwordError').style.display = 'block';
         return false;
     }
-
-    const newUser = {
-        email, password, firstname, lastname, birthdate
-    };
-
-    // API-Call zur Registrierung: POST /auth/register
-    const res = await apiRequest('/auth/register', 'POST', newUser, false);
-    if (res.ok) {
-        alert('Registrierung erfolgreich! Bitte überprüfen Sie Ihre Email zur Verifizierung.');
-        window.location.href = 'login.html';
+    if (userExists(username)) {
+        alert("Benutzername ist vergeben!");
         return false;
     }
 
-    // Fehlerbehandlung
-    if (res.data && res.data.message) {
-        alert('Fehler: ' + res.data.message);
-    } else {
-        alert('Registrierung fehlgeschlagen!');
-    }
+    const newUser = { 
+        firstname, lastname, username, email, birthdate, password,
+        address: "", destination: "", activities: [], trips: [] 
+    };
+    
+    saveUserToDB(newUser);
+    alert("Registrierung erfolgreich!");
+    window.location.href = 'login.html';
     return false;
 }
 
 async function loginUser(event) {
     event.preventDefault();
-    const email = document.getElementById('email').value || document.getElementById('username').value;
+    const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
+    const user = findUser(username, password);
 
-    // API-Login: POST /auth/login
-    const res = await apiRequest('/auth/login', 'POST', { email, password }, false);
-    if (res.ok && res.data) {
-        const accessToken = res.data.accessToken;
-        const refreshToken = res.data.refreshToken;
-        if (accessToken) {
-            saveTokens(accessToken, refreshToken);
-            // Hole die Nutzerdaten mit dem Access Token
-            const userRes = await apiRequest('/api/user/info', 'GET', null, true);
-            if (userRes.ok && userRes.data) {
-                localStorage.setItem('current_user', JSON.stringify(userRes.data));
-                saveUserToDB(userRes.data);
-                window.location.href = 'profile.html';
-                return false;
-            }
-        }
-    }
-
-    // Fehlerbehandlung
-    if (res.data && res.data.message) {
-        document.getElementById('errorMessage').style.display = 'block';
-        document.getElementById('errorMessage').textContent = res.data.message;
+    if (user) {
+        localStorage.setItem('current_user', JSON.stringify(user));
+        window.location.href = 'profile.html';
     } else {
         document.getElementById('errorMessage').style.display = 'block';
-        document.getElementById('errorMessage').textContent = 'Login fehlgeschlagen.';
+        document.getElementById('errorMessage').textContent = "Falsche Daten.";
     }
 }
 
-async function loadProfile() {
+function loadProfile() {
     const nameField = document.getElementById('profile-name');
     if (!nameField) return; 
-    let currentUser = JSON.parse(localStorage.getItem('current_user'));
-    const token = getAccessToken();
 
-    if (token) {
-        const res = await apiRequest('/api/user/info', 'GET', null, true);
-        if (res.ok && res.data) {
-            currentUser = res.data;
-            localStorage.setItem('current_user', JSON.stringify(currentUser));
-            saveUserToDB(currentUser);
-        }
-    }
-
+    const currentUser = JSON.parse(localStorage.getItem('current_user'));
     if (!currentUser) return window.location.href = 'login.html';
 
     // A) Profil Header
-    const age = calculateAge(currentUser.birthdate);
-    nameField.innerHTML = `${currentUser.firstname} ${currentUser.lastname} <small class="text-muted">(${currentUser.username})</small>`;
+    const age = calculateAge(user.personalData?.birthdate);
+    nameField.innerHTML = `${user.personalData?.firstname || ''} ${user.personalData?.lastname || ''} <small class="text-muted">(${user.email})</small>`;
     
     const infoField = document.getElementById('profile-info');
-    if(infoField) infoField.innerHTML = `📧 ${currentUser.email} &nbsp;|&nbsp; 🎂 ${age} Jahre alt`;
+    if(infoField) infoField.innerHTML = `📧 ${user.email} &nbsp;|&nbsp; 🎂 ${age} Jahre alt`;
 
     // B) Formular füllen
     const editFirst = document.getElementById('edit-firstname');
     if (editFirst) {
-        editFirst.value = currentUser.firstname || "";
-        document.getElementById('edit-lastname').value = currentUser.lastname || "";
-        document.getElementById('edit-address').value = currentUser.address || "";
-        document.getElementById('edit-destination').value = currentUser.destination || "";
+        editFirst.value = user.personalData?.firstname || "";
+        document.getElementById('edit-lastname').value = user.personalData?.lastname || "";
+        document.getElementById('edit-address').value = user.personalData?.address || "";
+        document.getElementById('edit-destination').value = user.personalData?.destination || "";
         
         const editAct = document.getElementById('edit-activities');
         if (editAct) {
-            const myActivities = currentUser.activities || [];
+            const myActivities = user.personalData?.activities || [];
             for (let i = 0; i < editAct.options.length; i++) {
-                if (myActivities.includes(editAct.options[i].value)) editAct.options[i].selected = true;
+                editAct.options[i].selected = myActivities.includes(editAct.options[i].value);
             }
         }
     }
 
-    // C) Reisen anzeigen (MIT BUTTONS)
+    // C) Reisen anzeigen
     const tripList = document.getElementById('trip-list');
     if (tripList) {
-        const myTrips = currentUser.trips || [];
-        tripList.innerHTML = ""; 
-        
-        if (myTrips.length === 0) {
-            tripList.innerHTML = '<p class="text-muted text-center fst-italic">Noch keine Reisen geplant.</p>';
-        } else {
-            myTrips.forEach(trip => {
-                const item = document.createElement('div');
-                item.className = "list-group-item d-flex justify-content-between align-items-center";
-                
-                // Wir fügen hier die Buttons ein mit onclick Events
-                item.innerHTML = `
-                    <div>
-                        <h5 class="mb-1">✈️ ${trip.destination}</h5>
-                        <small class="text-muted">Budget: <strong>${trip.budget} €</strong></small>
-                    </div>
-                    <div>
-                        <button onclick="openEditTripModal(${trip.id})" class="btn btn-outline-warning btn-sm me-1">✏️</button>
-                        <button onclick="deleteTrip(${trip.id})" class="btn btn-outline-danger btn-sm">🗑️</button>
-                    </div>
-                `;
-                tripList.appendChild(item);
-            });
-        }
+        // TODO: Trips vom Backend laden
+        tripList.innerHTML = '<p class="text-muted text-center fst-italic">Trip-Loading in Entwicklung...</p>';
     }
 }
 
-function updateProfile(event) {
+async function updateProfile(event) {
     event.preventDefault();
     let currentUser = JSON.parse(localStorage.getItem('current_user'));
 
-    const updateData = {
-        firstname: document.getElementById('edit-firstname').value,
-        lastname: document.getElementById('edit-lastname').value,
-        address: document.getElementById('edit-address').value,
-        destination: document.getElementById('edit-destination').value
-    };
+    currentUser.firstname = document.getElementById('edit-firstname').value;
+    currentUser.lastname = document.getElementById('edit-lastname').value;
+    currentUser.address = document.getElementById('edit-address').value;
+    currentUser.destination = document.getElementById('edit-destination').value;
 
     const activitiesSelect = document.getElementById('edit-activities');
     if (activitiesSelect) {
         const selectedActivities = [];
         for (let i = 0; i < activitiesSelect.options.length; i++) {
-            if (activitiesSelect.options[i].selected) selectedActivities.push(activitiesSelect.options[i].value);
-        }
-        updateData.activities = selectedActivities;
-    }
-
-    (async () => {
-        const token = getAccessToken();
-        if (token) {
-            const res = await apiRequest('/api/user/info', 'PATCH', updateData);
-            if (res.ok) {
-                // Wenn Response User-Daten enthält, diese speichern
-                if (res.data && res.data.id) {
-                    localStorage.setItem('current_user', JSON.stringify(res.data));
-                    saveUserToDB(res.data);
-                } else {
-                    // Sonst lokale Daten + update kombinieren
-                    Object.assign(currentUser, updateData);
-                    localStorage.setItem('current_user', JSON.stringify(currentUser));
-                    saveUserToDB(currentUser);
-                }
-                await loadProfile();
-                alert('Profil aktualisiert!');
-                return;
+            if (activitiesSelect.options[i].selected) {
+                personalData.activities.push(activitiesSelect.options[i].value);
             }
         }
+    }
+    currentUser.activities = selectedActivities;
 
-        // Fallback lokal
-        Object.assign(currentUser, updateData);
-        localStorage.setItem('current_user', JSON.stringify(currentUser));
-        saveUserToDB(currentUser);
-        loadProfile();
-        alert('Profil aktualisiert!');
-    })();
+    localStorage.setItem('current_user', JSON.stringify(currentUser));
+    saveUserToDB(currentUser);
+    loadProfile();
+    alert("Profil aktualisiert!");
 }
 
-async function logout() {
-    const refreshToken = getRefreshToken();
-    const accessToken = getAccessToken();
-
-    // Versuche API-Logout: POST /api/user/logout
-    if (accessToken && refreshToken) {
-        await apiRequest('/api/user/logout', 'POST', { refreshToken }, true);
-    }
-
-    // Tokens und Benutzerdaten löschen
-    clearTokens();
+function logout() {
     localStorage.removeItem('current_user');
     window.location.href = 'index.html';
 }
 
-// --- INIT ---
+// --- 6. INITIALIZATION ---
+
 document.addEventListener('DOMContentLoaded', () => {
     loadProfile();
-
+    loadTripDetails();
+    
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
@@ -419,3 +330,14 @@ document.addEventListener('DOMContentLoaded', () => {
         dateInput.max = today;
     }
 });
+
+// D. MITREISENDE HINZUFÜGEN
+function addParticipant(event) {
+    event.preventDefault();
+    const inputField = document.getElementById('participant-input');
+    const usernameToAdd = inputField.value.trim();
+    
+    // TODO: POST /api/trip/{id}/participant mit usernameToAdd
+    alert("Teilnehmer-Verwaltung wird vom Backend verwaltet - noch zu implementieren");
+    return false;
+}
