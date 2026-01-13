@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "AuthApi",
+            "request": "launch",
+            "mainClass": "com.urlaubsplaner.uniprojekt.api.AuthApi",
+            "projectName": "uniprojekt"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-UrlaubsplanerApplication<uniprojekt>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.urlaubsplaner.uniprojekt.UrlaubsplanerApplication",
+            "projectName": "uniprojekt",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
