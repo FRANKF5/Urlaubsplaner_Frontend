@@ -4,7 +4,7 @@
 
 // --- 1. HILFSFUNKTIONEN (Datenbank) ---
 // API-Konfiguration: passe `API_BASE` an dein Backend an
-const API_BASE = 'http://192.168.178.201:8080'; // z.B. 'http://localhost:3000' oder ''
+const API_BASE = 'http://10.75.177.97'; // z.B. 'http://localhost:3000' oder ''
 const ACCESS_TOKEN_KEY = 'accessToken';
 const REFRESH_TOKEN_KEY = 'refreshToken';
 
