@@ -12402,17 +12402,116 @@ textarea.form-control-lg {
   padding: 3rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
+.jumbotron > .card-header {
+  margin: -3rem -3rem 2rem -3rem; /* zieht ihn nach oben & zu den Seiten */
+  background: var(--bs-primary); /* Beispiel */
+  color: white;
+  font-weight: bold;
+  border-radius: 15px 15px 0 0;
+}
 .register-container {
-            max-width: 550px;
-            margin-top: 40px;
-            margin-bottom: 40px;
+    max-width: 550px;
+    margin: auto;
 }
 
-/* Footer with reversed navbar gradient */
+
+/* Footer */
 footer.bg-primary {
   background-image: none !important;
   background-color: #2fa4e7 !important;
 }
 .footer-placeholder {
             margin-top: auto;
+}
+
+
+/* ++++++++++++++ Skelleton CSS Effekts ++++++++++++++
+
+/* Grund-Skeleton */
+.skeleton {
+  position: relative;
+  color: transparent;          /* Text unsichtbar */
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  min-height: 1.2em;
+  line-height: normal;         /* verhindert Textabschnitt */
+  overflow: hidden;            /* Shimmer bleibt im Element */
+}
+
+/* Shimmer-Effekt */
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;                    /* füllt das gesamte Element */
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  animation: shimmer 1.2s infinite;
+}
+
+/* Keyframes für Shimmer */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Wenn Inhalt da ist: Skeleton aus */
+.skeleton:not(:empty) {
+  background: none;
+  color: inherit;
+}
+
+.skeleton:not(:empty)::after {
+  display: none;
+}
+
+/* Format für nicht geladenen inhalt 
+class wird durch eventlistener für alle class="skeleton" gesetzt */
+.error {
+  color: red;
+  font-style: italic;
+}
+
+
+/* +++++++++++++++++++ Alert- Popup +++++++++++++++++++ */
+/* Styling für das showAlert */
+.custom-alert {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #1a73e8;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 9999;
+}
+.custom-alert.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* Blaue Nachricht */
+.custom-alert-blue {
+  background-color: var(--bs-info);
+}
+
+/* Grüne Nachricht */
+.custom-alert-success {
+  background-color: var(--bs-success);
+}
+/* Gelbe Nachricht */
+.custom-alert-warning {
+  background-color: var(--bs-warning);
+}
+/* Rote Nachricht */
+.custom-alert-danger {
+  background-color: var(--bs-danger);
 }

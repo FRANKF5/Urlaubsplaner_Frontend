@@ -6,6 +6,7 @@
 -->
 
 <html lang="de">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,73 +15,154 @@
     -->
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body class="modern-background">
 
     <!-- Navigationsleiste oben-->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-5 sticky-top" style="box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-5 sticky-top"
+        style="box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <div class="container-fluid">
             <a class="navbar-brand" href="index.html">Urlaubsplaner</a>
-            
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                <a class="nav-link" href="index.html">Start</a>
-                </li>
-                <li class="nav-item">
-                <a class="nav-link" href="user_registration.html">Registrieren</a>
-                </li>
-                <li class="nav-item">
-                <a class="nav-link" href="login.html">Login</a>
-                </li>
-                <li class="nav-item">
-                <a class="nav-link active" href="profile.html">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle me-1" viewBox="0 0 16 16">
-                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
-                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
-                </svg>
-                Mein Profil
-                </a>
-                </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Start</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="user_registration.html">Registrieren</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="profile.html">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-person-circle me-1" viewBox="0 0 16 16">
+                                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+                                <path fill-rule="evenodd"
+                                    d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1" />
+                            </svg>
+                            Mein Profil
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
 
     <div class="container">
-        <div class="card border-primary mb-3" style="max-width: 40rem; margin: auto;">
-            <div class="card-header">Mein Profil</div>
-            <div class="card-body">
-                <h4 class="card-title" id="profile-name">Lade Daten...</h4>
-                <p class="card-text text-muted" id="profile-email">Bitte warten...</p>
-                
+        <div class="container fade-in-element card mb-3 register-container jumbotron">
+            <div class="card-header text-white mb-0 text-center h4">Mein Profil </div>
+            <div class="card-body p-4">
+                <h4 class="card-title text-center mb-0" id="profile-name">Lade Daten...</h4>
+                <p class="text-center text-muted mb-3" id="profile-info"></p>
+
                 <hr>
-                
-                <form id="update-name-form" class="mt-4">
-                    <label class="form-label">Namen ändern:</label>
-                    <div class="input-group mb-3">
-                        <input type="text" id="new-name-input" class="form-control" placeholder="Neuer Name">
-                        <button class="btn btn-outline-primary" type="submit">Speichern</button>
+
+                <form id="update-profile-form">
+                    <h5 class="mb-3 text-primary">Profil bearbeiten</h5>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small">Vorname</label>
+                            <input type="text" id="edit-firstname" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Nachname</label>
+                            <input type="text" id="edit-lastname" class="form-control">
+                        </div>
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small">Adresse (Straße, Hausnr, Ort)</label>
+                        <input type="text" id="edit-address" class="form-control"
+                            placeholder="Musterstraße 1, 12345 Berlin">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small">Mein Traumreiseziel 🌴</label>
+                        <input type="text" id="edit-destination" class="form-control" placeholder="z.B. Malediven">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small">Was machst du gerne? (Mehrfachauswahl mit Strg/Cmd)</label>
+                        <select class="form-select" id="edit-activities" multiple size="4">
+                            <option value="Strand">🏖️ Strand & Meer</option>
+                            <option value="Wandern">🥾 Wandern & Natur</option>
+                            <option value="Stadt">🏙️ Städtetrips</option>
+                            <option value="Kultur">🏛️ Kultur & Museen</option>
+                            <option value="Party">🎉 Party & Nightlife</option>
+                            <option value="Sport">surfing Sport & Action</option>
+                            <option value="Essen">🍕 Kulinarik</option>
+                        </select>
+                        <small class="text-muted" style="font-size: 0.75rem;">Halte die Strg-Taste (Windows) oder
+                            Cmd-Taste (Mac) gedrückt, um mehrere zu wählen.</small>
+                    </div>
+
+                    <button class="btn btn-primary w-100 mt-2" type="submit">Alle Änderungen speichern</button>
                 </form>
 
-                <button id="logout-btn" class="btn btn-danger w-100 mt-3">Logout</button>
+                
+
+                <div class="card border-info mb-3 mt-4" style="max-width: 40rem; margin: auto;">
+                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                        <span>Meine geplanten Reisen</span>
+                        <a href="travel_budget.html" class="btn btn-light btn-sm text-info fw-bold">+ Neue Reise</a>
+                    </div>
+
+                    <div class="card-body">
+                        <div id="trip-list" class="list-group list-group-flush">
+                            <p class="text-muted text-center fst-italic">Noch keine Reisen geplant.</p>
+                        </div>
+                    </div>
+                </div>
+                <button id="logout-btn" class="btn btn-outline-danger w-100 mt-3">Logout</button>
             </div>
         </div>
-        
+
         <div class="text-center mt-3">
             <a href="index.html" class="text-decoration-none">&larr; Zurück zur Startseite</a>
         </div>
     </div>
-    
+    <div class="modal fade" id="editTripModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-white">
+                    <h5 class="modal-title">Reise bearbeiten</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-trip-form" onsubmit="return saveEditedTrip(event)">
+                        <input type="hidden" id="edit-trip-id">
+
+                        <div class="mb-3">
+                            <label class="form-label">Ziel</label>
+                            <input type="text" class="form-control" id="edit-trip-dest" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Budget (€)</label>
+                            <input type="number" class="form-control" id="edit-trip-budget" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-warning">Änderungen speichern</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
     <!--Fußzeile: wird über .EventListener('DOMContentLoaded') aus footer.html geladen-->
     <div class="footer-placeholder"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
-    <script src="script_User.js"></script>
     <script src="script_Effects.js"></script>
+    <script src="script_User.js"></script>
+
 </body>
+
 </html>

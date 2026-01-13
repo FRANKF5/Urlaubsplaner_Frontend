@@ -1,218 +1,368 @@
 /* script_User.js
-   SIMULIERTES BACKEND FÜR DAS FRONTEND-TEAM
-   Nutzt localStorage, um Daten zwischen den HTML-Seiten zu speichern.
+   Zentrale Steuerung INKLUSIVE Detailansicht und erweiterter Reise-Daten
 */
 
-// --- HILFSFUNKTIONEN (MOCK DATABASE) ---
+// --- 1. HILFSFUNKTIONEN (Datenbank) ---
 
-// Simuliert das Speichern eines Users in der Datenbank
 function saveUserToDB(user) {
-    // Hole alle existierenden User oder erstelle leere Liste
-    let users = JSON.parse(localStorage.getItem('mock_users_db')) || [];
-    users.push(user);
-    localStorage.setItem('mock_users_db', JSON.stringify(users));
+    let users = JSON.parse(localStorage.getItem('users_db')) || [];
+    const index = users.findIndex(u => u.username === user.username);
+    if (index !== -1) {
+        users[index] = user;
+    } else {
+        users.push(user);
+    }
+    localStorage.setItem('users_db', JSON.stringify(users));
 }
 
-// Simuliert die Suche nach einem User in der Datenbank
-function findUserInDB(username, password) {
-    let users = JSON.parse(localStorage.getItem('mock_users_db')) || [];
-    // Sucht User, wo Name UND Passwort übereinstimmen
+function findUser(username, password) {
+    let users = JSON.parse(localStorage.getItem('users_db')) || [];
     return users.find(u => u.username === username && u.password === password);
 }
 
-// Prüft, ob der Username schon vergeben ist
 function userExists(username) {
-    let users = JSON.parse(localStorage.getItem('mock_users_db')) || [];
+    let users = JSON.parse(localStorage.getItem('users_db')) || [];
     return users.some(u => u.username === username);
 }
 
-// --- HAUPTFUNKTIONEN FÜR DIE SEITEN ---
-
-// 1. REGISTRIERUNG (wird in user_registration.html genutzt)
-function registerUser(event) {
-    event.preventDefault(); // Verhindert Neuladen
-
-    const usernameInput = document.getElementById('username').value;
-    const emailInput = document.getElementById('email').value;
-    const passwordInput = document.getElementById('password').value;
-    const confirmInput = document.getElementById('confirm_password').value;
-    const birthdateInput = document.getElementById('birthdate').value;
-
-<<<<<<< HEAD
-    const form = document.getElementById('update-name-form');
-    if (form) form.addEventListener('submit', handleNameChange);
-});
-
-
-//Funktion für Registrierungsseite
-document.addEventListener('DOMContentLoaded', function() {
-    const dateInput = document.getElementById('birthdate');
-    
-    // 1. Heutiges Datum ermitteln
+function calculateAge(birthdateString) {
+    if (!birthdateString) return "Unbekannt";
     const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0'); // Monat ist 0-basiert, daher +1
-    const day = String(today.getDate()).padStart(2, '0');
-    
-    // Format für HTML input date ist immer: YYYY-MM-DD
-    const maxDate = `${year}-${month}-${day}`;
-    
-    // 2. Minimales Datum ermitteln (Vor 150 Jahren)
-    const minYear = year - 125;
-    const minDate = `${minYear}-${month}-${day}`;
+    const birthDate = new Date(birthdateString);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+    return age;
+}
 
-    // 3. Attribute setzen
-    dateInput.max = maxDate; // Niemand aus der Zukunft
-    dateInput.min = minDate; // Niemand älter als 150 Jahre
+// --- 2. REISE-FUNKTIONEN ---
 
-    //Passwortmatch Listener
-    const confirmPasswordInput = document.getElementById('confirm_password');
-    confirmPasswordInput.addEventListener('input', validatePasswordMatch);
-});
+// A. REISE SPEICHERN (mit neuen Feldern)
+function saveTrip(event) {
+    event.preventDefault();
 
-//Check if Password an Confirm Password match
-function validatePasswordMatch() {
-    const password = document.getElementById('password').value;
-    const confirmPassword = document.getElementById('confirm_password').value;
-    const errorMessage = document.getElementById('passwordError');
+    // Neue Felder abrufen
+    const title = document.getElementById('trip-title').value;
+    const dest = document.getElementById('trip-destination').value;
+    const start = document.getElementById('trip-start').value;
+    const end = document.getElementById('trip-end').value;
+    const budget = document.getElementById('trip-budget').value;
+
+    let currentUser = JSON.parse(localStorage.getItem('current_user'));
+    if (!currentUser) return window.location.href = 'login.html';
+
+    if (!currentUser.trips) currentUser.trips = [];
+
+    // Reise Objekt mit allen Daten
+    const newTrip = {
+        id: Date.now(), // Eindeutige ID
+        title: title,
+        destination: dest,
+        startDate: start,
+        endDate: end,
+        budget: budget
+    };
     
-    if (password !== confirmPassword && confirmPassword.length > 0) {
-        errorMessage.style.display = 'block';
-        return false;
+    currentUser.trips.push(newTrip);
+
+    localStorage.setItem('current_user', JSON.stringify(currentUser));
+    saveUserToDB(currentUser);
+
+    alert("Reise erfolgreich angelegt!");
+    window.location.href = 'profile.html';
+    return false;
+}
+
+// B. LÖSCHEN
+function deleteTrip(tripId) {
+    if(!confirm("Möchtest du diese Reise wirklich löschen?")) return;
+
+    let currentUser = JSON.parse(localStorage.getItem('current_user'));
+    currentUser.trips = currentUser.trips.filter(t => t.id != tripId);
+
+    localStorage.setItem('current_user', JSON.stringify(currentUser));
+    saveUserToDB(currentUser);
+    
+    // Wenn wir auf der Profilseite sind: Liste neu laden
+    if(document.getElementById('trip-list')) {
+        loadProfile(); 
     } else {
-        errorMessage.style.display = 'none';
-        return true;
+        // Wenn wir auf der Detailseite sind: Zurück zum Profil
+        window.location.href = 'profile.html';
     }
 }
 
-// Function to validate entire form
-function validateForm(event) {
+// C. DETAILANSICHT LADEN (Aktualisiert)
+function loadTripDetails() {
+    const titleElement = document.getElementById('detail-title');
+    if (!titleElement) return; 
+
+    const params = new URLSearchParams(window.location.search);
+    const tripId = params.get('id');
+
+    if (!tripId) return;
+
+    const currentUser = JSON.parse(localStorage.getItem('current_user'));
+    if (!currentUser || !currentUser.trips) return;
+
+    const trip = currentUser.trips.find(t => String(t.id) === String(tripId));
+
+    if (trip) {
+        // Basis-Daten
+        document.getElementById('detail-title').textContent = trip.title || "Ohne Titel";
+        document.getElementById('detail-destination').textContent = trip.destination;
+        document.getElementById('detail-budget').textContent = `${trip.budget} €`;
+        
+        let dateText = "Kein Zeitraum";
+        if (trip.startDate && trip.endDate) {
+            const start = new Date(trip.startDate).toLocaleDateString('de-DE');
+            const end = new Date(trip.endDate).toLocaleDateString('de-DE');
+            dateText = `${start} - ${end}`;
+        }
+        document.getElementById('detail-dates').textContent = dateText;
+
+        // NEU: Mitreisende anzeigen
+        const partList = document.getElementById('participant-list');
+        partList.innerHTML = ""; // Liste leeren
+        
+        if (trip.participants && trip.participants.length > 0) {
+            trip.participants.forEach(name => {
+                const li = document.createElement('li');
+                li.className = "list-group-item d-flex justify-content-between align-items-center";
+                li.innerHTML = `
+                    <span>👤 ${name}</span>
+                    <button class="btn btn-sm btn-link text-danger text-decoration-none" onclick="removeParticipant('${trip.id}', '${name}')">&times;</button>
+                `;
+                partList.appendChild(li);
+            });
+        } else {
+            partList.innerHTML = '<li class="list-group-item text-muted fst-italic">Noch keine Mitreisenden.</li>';
+        }
+
+        // Löschen-Button
+        const delBtn = document.getElementById('delete-trip-btn');
+        if(delBtn) delBtn.onclick = function() { deleteTrip(trip.id); };
+    }
+}
+
+// E. ZUSATZ: Mitreisenden entfernen (Optional, aber nützlich)
+function removeParticipant(tripId, nameToRemove) {
+    let currentUser = JSON.parse(localStorage.getItem('current_user'));
+    const trip = currentUser.trips.find(t => String(t.id) === String(tripId));
+
+    if (trip && trip.participants) {
+        trip.participants = trip.participants.filter(name => name !== nameToRemove);
+
+        localStorage.setItem('current_user', JSON.stringify(currentUser));
+        saveUserToDB(currentUser);
+        loadTripDetails(); // Neu laden
+    }
+}
+
+// --- 3. HAUPTFUNKTIONEN (User) ---
+
+function registerUser(event) {
     event.preventDefault();
-    
-    if (!validatePasswordMatch()) {
-        alert('Passwörter stimmen nicht überein!');
-=======
-    // Validierung: Passwörter
-    if (passwordInput !== confirmInput) {
+    /* ... (Identisch zu vorher, gekürzt für Übersicht) ... */
+    const firstname = document.getElementById('firstname').value;
+    const lastname = document.getElementById('lastname').value;
+    const username = document.getElementById('username').value;
+    const email = document.getElementById('email').value;
+    const birthdate = document.getElementById('birthdate').value;
+    const password = document.getElementById('password').value;
+    const confirm = document.getElementById('confirm_password').value;
+
+    if (password !== confirm) {
         document.getElementById('passwordError').style.display = 'block';
->>>>>>> e249f7a77e3b05691665899b0cb72cd9dcaa6b02
+        return false;
+    }
+    if (userExists(username)) {
+        alert("Benutzername ist vergeben!");
         return false;
     }
 
-    // Validierung: Existiert der User schon?
-    if (userExists(usernameInput)) {
-        alert("Dieser Benutzername ist leider schon vergeben.");
-        return false;
-    }
-
-    // User Objekt erstellen
     const newUser = {
-        username: usernameInput,
-        email: emailInput,
-        password: passwordInput, // Hinweis: Im echten Backend niemals Klartext speichern!
-        birthdate: birthdateInput
+        firstname, lastname, username, email, birthdate, password,
+        address: "", destination: "", activities: [], trips: []
     };
 
-    // Speichern (Mock)
     saveUserToDB(newUser);
-
-    alert("Konto erfolgreich erstellt! Du wirst zum Login weitergeleitet.");
+    alert("Registrierung erfolgreich!");
     window.location.href = 'login.html';
     return false;
 }
-<<<<<<< HEAD
-//Function to check if password and confirm_password match
-document.getElementById('loginForm').addEventListener('submit', function(event) {
-    event.preventDefault();
 
-    var username = document.getElementById('username').value;
-    var password = document.getElementById('password').value;
-
-    // Hier sollte die Authentifizierung erfolgen
-    if (username === 'admin' && password === 'password') {
-        window.location.href = 'dashboard.html';
-    } else {
-        var errorMessage = document.getElementById('errorMessage');
-        errorMessage.textContent = 'Ungültiger Benutzername oder Passwort.';
-        errorMessage.style.display = 'block';
-=======
-
-// 2. LOGIN (wird in login.html genutzt)
 function loginUser(event) {
     event.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const user = findUser(username, password);
 
-    const usernameInput = document.getElementById('username').value;
-    const passwordInput = document.getElementById('password').value;
-    const errorBox = document.getElementById('errorMessage');
-
-    // Suchen in der Mock-DB
-    const foundUser = findUserInDB(usernameInput, passwordInput);
-
-    if (foundUser) {
-        // ERFOLG: Wir speichern den "aktuellen User" in der Session
-        // Das simuliert das eingeloggte Cookie
-        localStorage.setItem('current_session_user', JSON.stringify(foundUser));
-        
+    if (user) {
+        localStorage.setItem('current_user', JSON.stringify(user));
         window.location.href = 'profile.html';
     } else {
-        // FEHLER
-        if(errorBox) {
-            errorBox.textContent = "Benutzername oder Passwort falsch.";
-            errorBox.style.display = 'block';
+        document.getElementById('errorMessage').style.display = 'block';
+        document.getElementById('errorMessage').textContent = "Falsche Daten.";
+    }
+}
+
+// PROFIL LADEN (Erstellt jetzt Links zu den Details)
+function loadProfile() {
+    const nameField = document.getElementById('profile-name');
+    if (!nameField) return; 
+
+    const currentUser = JSON.parse(localStorage.getItem('current_user'));
+    if (!currentUser) return window.location.href = 'login.html';
+
+    // A) Profil Header
+    const age = calculateAge(currentUser.birthdate);
+    nameField.innerHTML = `${currentUser.firstname} ${currentUser.lastname} <small class="text-muted">(${currentUser.username})</small>`;
+    
+    const infoField = document.getElementById('profile-info');
+    if(infoField) infoField.innerHTML = `📧 ${currentUser.email} &nbsp;|&nbsp; 🎂 ${age} Jahre alt`;
+
+    // B) Formular füllen
+    const editFirst = document.getElementById('edit-firstname');
+    if (editFirst) {
+        editFirst.value = currentUser.firstname || "";
+        document.getElementById('edit-lastname').value = currentUser.lastname || "";
+        document.getElementById('edit-address').value = currentUser.address || "";
+        document.getElementById('edit-destination').value = currentUser.destination || "";
+        
+        const editAct = document.getElementById('edit-activities');
+        if (editAct) {
+            const myActivities = currentUser.activities || [];
+            for (let i = 0; i < editAct.options.length; i++) {
+                if (myActivities.includes(editAct.options[i].value)) editAct.options[i].selected = true;
+            }
+        }
+    }
+
+    // C) Reisen anzeigen (KLICKBAR!)
+    const tripList = document.getElementById('trip-list');
+    if (tripList) {
+        const myTrips = currentUser.trips || [];
+        tripList.innerHTML = ""; 
+        
+        if (myTrips.length === 0) {
+            tripList.innerHTML = '<p class="text-muted text-center fst-italic">Noch keine Reisen geplant.</p>';
         } else {
-            alert("Login fehlgeschlagen.");
+            myTrips.forEach(trip => {
+                // Wir erstellen ein DIV als Container
+                const item = document.createElement('div');
+                item.className = "list-group-item d-flex justify-content-between align-items-center list-group-item-action";
+                
+                // Link zum Draufklicken (spannt über den Text)
+                // Wir nutzen HTML im innerHTML, um den Link zu bauen
+                item.innerHTML = `
+                    <a href="trip_details.html?id=${trip.id}" class="text-decoration-none text-body flex-grow-1">
+                        <div>
+                            <h5 class="mb-1">✈️ ${trip.title || trip.destination}</h5>
+                            <small class="text-muted">Ziel: ${trip.destination} | Budget: <strong>${trip.budget} €</strong></small>
+                        </div>
+                    </a>
+                    <div class="ms-2">
+                        <button onclick="event.preventDefault(); deleteTrip(${trip.id})" class="btn btn-outline-danger btn-sm">🗑️</button>
+                    </div>
+                `;
+                tripList.appendChild(item);
+            });
         }
     }
 }
 
-// 3. PROFIL LADEN (wird in profile.html genutzt)
-function loadProfile() {
-    const nameDisplay = document.getElementById('profile-name');
-    const emailDisplay = document.getElementById('profile-email');
+function updateProfile(event) {
+    event.preventDefault();
+    let currentUser = JSON.parse(localStorage.getItem('current_user'));
 
-    // Nur ausführen, wenn wir auf der Profilseite sind
-    if (!nameDisplay) return;
+    currentUser.firstname = document.getElementById('edit-firstname').value;
+    currentUser.lastname = document.getElementById('edit-lastname').value;
+    currentUser.address = document.getElementById('edit-address').value;
+    currentUser.destination = document.getElementById('edit-destination').value;
 
-    // Prüfen, wer eingeloggt ist
-    const currentUser = JSON.parse(localStorage.getItem('current_session_user'));
-
-    if (currentUser) {
-        nameDisplay.textContent = currentUser.username;
-        emailDisplay.textContent = currentUser.email;
-    } else {
-        // Niemand eingeloggt? Rauswerfen!
-        alert("Bitte erst einloggen.");
-        window.location.href = 'login.html';
+    const activitiesSelect = document.getElementById('edit-activities');
+    const selectedActivities = [];
+    if (activitiesSelect) {
+        for (let i = 0; i < activitiesSelect.options.length; i++) {
+            if (activitiesSelect.options[i].selected) selectedActivities.push(activitiesSelect.options[i].value);
+        }
     }
+    currentUser.activities = selectedActivities;
+
+    localStorage.setItem('current_user', JSON.stringify(currentUser));
+    saveUserToDB(currentUser);
+    loadProfile();
+    alert("Profil aktualisiert!");
 }
 
-// 4. LOGOUT
 function logout() {
-    localStorage.removeItem('current_session_user');
+    localStorage.removeItem('current_user');
     window.location.href = 'index.html';
 }
 
-// --- INITIALISIERUNG BEIM LADEN ---
-document.addEventListener('DOMContentLoaded', function() {
-    
-    // Prüfen, ob wir Profil laden müssen
+// --- INIT ---
+document.addEventListener('DOMContentLoaded', () => {
     loadProfile();
 
-    // Event Listener für Logout Button (falls vorhanden)
     const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', logout);
-    }
+    if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
-    // Datums-Grenzen setzen (dein bestehender Code)
+    const updateForm = document.getElementById('update-profile-form');
+    if (updateForm) updateForm.addEventListener('submit', updateProfile);
+    
     const dateInput = document.getElementById('birthdate');
     if(dateInput) {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        dateInput.max = `${year}-${month}-${day}`;
-        dateInput.min = `${year - 125}-${month}-${day}`;
->>>>>>> e249f7a77e3b05691665899b0cb72cd9dcaa6b02
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.max = today;
     }
 });
+
+// D. MITREISENDE HINZUFÜGEN
+function addParticipant(event) {
+    event.preventDefault();
+    
+    const inputField = document.getElementById('participant-input');
+    const usernameToAdd = inputField.value.trim();
+    
+    // 1. Reise-ID holen
+    const params = new URLSearchParams(window.location.search);
+    const tripId = params.get('id');
+    
+    // 2. Aktuellen User & Reise laden
+    let currentUser = JSON.parse(localStorage.getItem('current_user'));
+    const trip = currentUser.trips.find(t => String(t.id) === String(tripId));
+    
+    if (!trip) return;
+
+    // 3. Validierung: Existiert der User in der Datenbank?
+    // Wir nutzen die Hilfsfunktion userExists(), die wir schon haben
+    if (!userExists(usernameToAdd)) {
+        alert(`Der Benutzer "${usernameToAdd}" wurde nicht gefunden. Bitte prüfe die Schreibweise.`);
+        return false;
+    }
+
+    // 4. Validierung: Ist er schon dabei?
+    // Wir initialisieren das Array, falls es noch nicht existiert
+    if (!trip.participants) trip.participants = [];
+    
+    if (trip.participants.includes(usernameToAdd)) {
+        alert("Diese Person ist bereits hinzugefügt.");
+        return false;
+    }
+    
+    if (usernameToAdd === currentUser.username) {
+        alert("Du bist automatisch dabei, du musst dich nicht hinzufügen :)");
+        return false;
+    }
+
+    // 5. Hinzufügen & Speichern
+    trip.participants.push(usernameToAdd);
+    
+    localStorage.setItem('current_user', JSON.stringify(currentUser));
+    saveUserToDB(currentUser); // Auch in der DB aktualisieren
+    
+    alert(`${usernameToAdd} wurde hinzugefügt!`);
+    inputField.value = ""; // Feld leeren
+    loadTripDetails(); // Ansicht aktualisieren
+}
