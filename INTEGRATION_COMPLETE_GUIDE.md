@@ -29,7 +29,7 @@ Your frontend is now fully integrated with the Spring Boot backend! Here's what 
 ### **Step 1: Start the Backend**
 ```bash
 cd "Backend-Code-main/uniprojekt"
-mvn clean package
+mvn clean package        // mvn clean package -DskipTests
 java -jar target/uniprojekt-0.0.1-SNAPSHOT.jar
 ```
 The backend will start on `http://localhost:8080`

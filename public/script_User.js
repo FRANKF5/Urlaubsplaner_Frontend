@@ -4,7 +4,7 @@
 */
 
 // Import configuration
-const CONFIG = window.CONFIG || {
+/*const CONFIG = window.CONFIG || {
     API_BASE_URL: 'http://localhost:8080',
     ENDPOINTS: {
         AUTH: {
@@ -29,8 +29,8 @@ const CONFIG = window.CONFIG || {
         }
     }
 };
-
-//const API_BASE_URL = CONFIG.API_BASE_URL;
+*/
+const API_BASE_URL = CONFIG.API_BASE_URL;
 
 // --- 1. TOKEN MANAGEMENT ---
 
@@ -489,7 +489,7 @@ function logout() {
 
 document.addEventListener('DOMContentLoaded', () => {
     loadProfile();
-    loadTripDetails();
+    //loadTripDetails();
     
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) logoutBtn.addEventListener('click', logout);
