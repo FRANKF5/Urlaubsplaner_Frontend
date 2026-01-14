@@ -4,7 +4,7 @@
 */
 
 // Backend URL Konstante
-const API_BASE_URL = 'http://localhost:8080';
+//const API_BASE_URL = 'http://localhost:8080';
 
 // --- 1. TOKEN MANAGEMENT ---
 
@@ -197,9 +197,9 @@ function saveTrip(event) {
     return false;
 }
 
-function registerUser(event) {
+async function registerUser(event) {
     event.preventDefault();
-    
+
     const firstname = document.getElementById('firstname').value;
     const lastname = document.getElementById('lastname').value;
     const email = document.getElementById('email').value;
@@ -209,23 +209,42 @@ function registerUser(event) {
 
     if (password !== confirm) {
         document.getElementById('passwordError').style.display = 'block';
-        return false;
-    }
-    if (userExists(username)) {
-        alert("Benutzername ist vergeben!");
-        return false;
+        return;
     }
 
-    const newUser = { 
-        firstname, lastname, username, email, birthdate, password,
-        address: "", destination: "", activities: [], trips: [] 
-    };
-    
-    saveUserToDB(newUser);
-    alert("Registrierung erfolgreich!");
-    window.location.href = 'login.html';
-    return false;
+    try {
+        const response = await fetch('/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                firstname,
+                lastname,
+                email,
+                birthdate,
+                password
+            })
+        });
+
+        if (response.status === 409) {
+            alert('E-Mail ist bereits registriert!');
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error('Registrierung fehlgeschlagen');
+        }
+
+        alert('Registrierung erfolgreich!');
+        window.location.href = 'login.html';
+
+    } catch (error) {
+        console.error(error);
+        alert('Serverfehler bei der Registrierung');
+    }
 }
+
 
 async function loginUser(event) {
     event.preventDefault();

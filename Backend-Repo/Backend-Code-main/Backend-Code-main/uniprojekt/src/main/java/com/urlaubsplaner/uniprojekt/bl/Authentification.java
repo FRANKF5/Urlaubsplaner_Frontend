@@ -1,17 +1,20 @@
 package com.urlaubsplaner.uniprojekt.bl;
 
 import java.security.SecureRandom;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.sql.Timestamp;
 
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import com.urlaubsplaner.uniprojekt.database.AuthConnector;
-import com.urlaubsplaner.uniprojekt.templates.*;
-
-import com.urlaubsplaner.uniprojekt.mail.*;
+import com.urlaubsplaner.uniprojekt.mail.Mailer;
+import com.urlaubsplaner.uniprojekt.templates.Auth;
+import com.urlaubsplaner.uniprojekt.templates.PersonalData;
+import com.urlaubsplaner.uniprojekt.templates.RefreshToken;
+import com.urlaubsplaner.uniprojekt.templates.Token;
+import com.urlaubsplaner.uniprojekt.templates.Verification;
 
 @Service
 public class Authentification {
