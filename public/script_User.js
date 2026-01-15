@@ -3,8 +3,8 @@
    Verbindung zum Spring Boot Backend auf localhost:8080
 */
 
-// Backend URL Konstante
-const API_BASE_URL = 'http://localhost:8080';
+// Backend URL aus CONFIG (config.js muss vor diesem Script geladen werden)
+const API_BASE_URL = CONFIG.API_BASE_URL;
 
 // --- 1. TOKEN MANAGEMENT ---
 
@@ -103,38 +103,235 @@ function calculateAge(birthdateString) {
     return age;
 }
 
+function formatDate(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
 // --- 5. REISE FUNKTIONEN ---
 
-// TODO: Trip-API-Endpoints vom Backend implementieren
-function saveTrip(event) {
+// Alle Trips laden
+async function getAllTrips() {
+    return await apiCall('/api/trips');
+}
+
+// Eigene Trips laden
+async function getOwnedTrips() {
+    return await apiCall('/api/trips/owned');
+}
+
+// Geteilte Trips laden
+async function getSharedTrips() {
+    return await apiCall('/api/trips/shared');
+}
+
+// Trip erstellen
+async function createTrip(tripData) {
+    return await apiCall('/api/trips', 'POST', tripData);
+}
+
+// Trip aktualisieren
+async function updateTrip(tripId, tripData) {
+    return await apiCall('/api/trips', 'PATCH', { trip_id: tripId, ...tripData });
+}
+
+// Trip speichern (Formular-Handler)
+async function saveTrip(event) {
     event.preventDefault();
-    alert("Trip-Speicherung wird vom Backend verwaltet - noch zu implementieren");
+
+    const tripData = {
+        title: document.getElementById('trip-title')?.value,
+        destination: document.getElementById('trip-destination')?.value,
+        startDate: document.getElementById('trip-start')?.value,
+        endDate: document.getElementById('trip-end')?.value,
+        budget: parseFloat(document.getElementById('trip-budget')?.value) || 0
+    };
+
+    const result = await createTrip(tripData);
+
+    if (result && result.id) {
+        alert('Reise erfolgreich erstellt!');
+        window.location.href = 'profile.html';
+    } else {
+        alert('Fehler beim Erstellen der Reise.');
+    }
     return false;
 }
 
-function deleteTrip(tripId) {
-    if(!confirm("Möchtest du diese Reise wirklich löschen?")) return;
-    // TODO: DELETE /api/trip/{id}
-    alert("Trip-Löschung wird vom Backend verwaltet - noch zu implementieren");
+// Trip löschen/verlassen
+async function deleteTrip(tripId) {
+    if (!confirm("Möchtest du diese Reise wirklich löschen/verlassen?")) return;
+
+    const result = await leaveTrip(tripId);
+
+    if (result) {
+        alert('Reise verlassen.');
+        window.location.href = 'profile.html';
+    } else {
+        alert('Fehler beim Verlassen der Reise.');
+    }
 }
 
-function loadTripDetails() {
+// --- 6. AKTIVITÄTEN FUNKTIONEN ---
+
+// Aktivitäten eines Trips laden
+async function getTripActivities(tripId) {
+    return await apiCall(`/api/trip/activities/${tripId}`);
+}
+
+// Aktivität erstellen
+async function createActivity(activityData) {
+    return await apiCall('/api/activities', 'POST', activityData);
+}
+
+// Aktivität aktualisieren
+async function updateActivity(activityData) {
+    return await apiCall('/api/activities', 'PATCH', activityData);
+}
+
+// --- 7. GRUPPEN/TEILNEHMER FUNKTIONEN ---
+
+// User zu Trip hinzufügen
+async function addUserToTrip(tripId, userEmail) {
+    return await apiCall('/api/groups/user', 'POST', {
+        trip_id: tripId,
+        email: userEmail
+    });
+}
+
+// User von Trip entfernen
+async function removeUserFromTrip(tripId, userEmail) {
+    return await apiCall('/api/groups/user', 'DELETE', {
+        trip_id: tripId,
+        email: userEmail
+    });
+}
+
+// Trip verlassen
+async function leaveTrip(tripId) {
+    return await apiCall('/api/groups/leave', 'POST', { trip_id: tripId });
+}
+
+// Teilnehmer eines Trips laden
+async function getTripParticipants(tripId) {
+    return await apiCall(`/api/groups/group/${tripId}`);
+}
+
+// Trip-Details laden
+async function loadTripDetails() {
     const titleElement = document.getElementById('detail-title');
     if (!titleElement) return;
-    // TODO: Trip-Details vom Backend laden
-    titleElement.textContent = "Trip-Details werden vom Backend geladen...";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const tripId = urlParams.get('id');
+
+    if (!tripId) {
+        titleElement.textContent = 'Keine Reise ausgewählt';
+        return;
+    }
+
+    const trips = await getAllTrips();
+    const trip = trips?.find(t => t.id == tripId);
+
+    if (!trip) {
+        titleElement.textContent = 'Reise nicht gefunden';
+        return;
+    }
+
+    titleElement.textContent = trip.title || 'Reisedetails';
+
+    const destEl = document.getElementById('detail-destination');
+    if (destEl) destEl.textContent = trip.destination || '-';
+
+    const datesEl = document.getElementById('detail-dates');
+    if (datesEl) datesEl.textContent = `${formatDate(trip.startDate)} bis ${formatDate(trip.endDate)}`;
+
+    const budgetEl = document.getElementById('detail-budget');
+    if (budgetEl) budgetEl.textContent = `${trip.budget || 0} €`;
+
+    await loadTripParticipants(tripId);
+
+    const deleteBtn = document.getElementById('delete-trip-btn');
+    if (deleteBtn) {
+        deleteBtn.onclick = () => deleteTrip(tripId);
+    }
 }
 
-function removeParticipant(tripId, nameToRemove) {
-    // TODO: DELETE /api/trip/{id}/participant
-    alert("Teilnehmer-Verwaltung wird vom Backend verwaltet - noch zu implementieren");
+// Teilnehmer-Liste laden
+async function loadTripParticipants(tripId) {
+    const participantList = document.getElementById('participant-list');
+    if (!participantList) return;
+
+    const participants = await getTripParticipants(tripId);
+
+    if (participants && participants.length > 0) {
+        participantList.innerHTML = participants.map(p => `
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                ${p.email || p.name || 'Unbekannt'}
+                <button class="btn btn-sm btn-outline-danger"
+                        onclick="removeParticipant('${tripId}', '${p.email}')">
+                    Entfernen
+                </button>
+            </li>
+        `).join('');
+    } else {
+        participantList.innerHTML = '<li class="list-group-item text-muted">Keine Teilnehmer</li>';
+    }
 }
 
-function addParticipant(event) {
+// Teilnehmer entfernen
+async function removeParticipant(tripId, emailToRemove) {
+    if (!confirm(`Möchtest du ${emailToRemove} wirklich entfernen?`)) return;
+
+    const result = await removeUserFromTrip(tripId, emailToRemove);
+
+    if (result) {
+        alert('Teilnehmer entfernt.');
+        await loadTripParticipants(tripId);
+    } else {
+        alert('Fehler beim Entfernen des Teilnehmers.');
+    }
+}
+
+// Teilnehmer hinzufügen (Formular-Handler)
+async function addParticipant(event) {
     event.preventDefault();
-    // TODO: POST /api/trip/{id}/participant
-    alert("Teilnehmer-Verwaltung wird vom Backend verwaltet - noch zu implementieren");
+    const inputField = document.getElementById('participant-input');
+    const emailToAdd = inputField.value.trim();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const tripId = urlParams.get('id');
+
+    if (!tripId) {
+        alert('Fehler: Keine Reise-ID gefunden.');
+        return false;
+    }
+
+    const result = await addUserToTrip(tripId, emailToAdd);
+
+    if (result) {
+        alert('Teilnehmer erfolgreich hinzugefügt!');
+        inputField.value = '';
+        await loadTripParticipants(tripId);
+    } else {
+        alert('Fehler beim Hinzufügen des Teilnehmers.');
+    }
     return false;
+}
+
+// --- 8. SETTINGS FUNKTIONEN ---
+
+async function getAllSettings() {
+    return await apiCall('/api/settings');
+}
+
+async function getSetting(option) {
+    return await apiCall(`/api/settings/${option}`);
+}
+
+async function updateSetting(option, value) {
+    return await apiCall('/api/user/config', 'PATCH', { option, value });
 }
 
 // --- 3. AUTHENTIFIZIERUNG ---
@@ -262,8 +459,22 @@ async function loadProfile() {
     // C) Reisen anzeigen
     const tripList = document.getElementById('trip-list');
     if (tripList) {
-        // TODO: Trips vom Backend laden
-        tripList.innerHTML = '<p class="text-muted text-center fst-italic">Trip-Loading in Entwicklung...</p>';
+        const trips = await getAllTrips();
+
+        if (trips && trips.length > 0) {
+            tripList.innerHTML = trips.map(trip => `
+                <a href="trip_details.html?id=${trip.id}"
+                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${trip.title || trip.destination || 'Unbenannte Reise'}</strong>
+                        <br><small class="text-muted">${trip.destination || ''} | ${formatDate(trip.startDate)} - ${formatDate(trip.endDate)}</small>
+                    </div>
+                    <span class="badge bg-success">${trip.budget || 0}€</span>
+                </a>
+            `).join('');
+        } else {
+            tripList.innerHTML = '<p class="text-muted text-center fst-italic">Noch keine Reisen geplant.</p>';
+        }
     }
 }
 
@@ -328,13 +539,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// D. MITREISENDE HINZUFÜGEN
-function addParticipant(event) {
-    event.preventDefault();
-    const inputField = document.getElementById('participant-input');
-    const usernameToAdd = inputField.value.trim();
-    
-    // TODO: POST /api/trip/{id}/participant mit usernameToAdd
-    alert("Teilnehmer-Verwaltung wird vom Backend verwaltet - noch zu implementieren");
-    return false;
-}

@@ -2,9 +2,9 @@
 // Diese Datei kann in script_User.js importiert werden
 
 const CONFIG = {
-    // Backend Server URL
-    API_BASE_URL: 'http://localhost:8080',
-    
+    // Backend Server URL - Produktions-Backend
+    API_BASE_URL: 'https://maz-nas-ma.synology.me:7039',
+
     // API Endpoints
     ENDPOINTS: {
         AUTH: {
@@ -16,16 +16,31 @@ const CONFIG = {
         USER: {
             INFO: '/api/user/info',
             LOGOUT: '/api/user/logout',
-            LOGOUT_ALL: '/api/user/logoutAll'
+            LOGOUT_ALL: '/api/user/logoutAll',
+            CONFIG: '/api/user/config'
         },
-        TRIP: {
-            LIST: '/api/trip',
-            CREATE: '/api/trip',
-            GET: (id) => `/api/trip/${id}`,
-            UPDATE: (id) => `/api/trip/${id}`,
-            DELETE: (id) => `/api/trip/${id}`,
-            PARTICIPANTS: (id) => `/api/trip/${id}/participant`,
-            EXPENSES: (id) => `/api/trip/${id}/expense`
+        TRIPS: {
+            ALL: '/api/trips',
+            OWNED: '/api/trips/owned',
+            SHARED: '/api/trips/shared',
+            CREATE: '/api/trips',
+            UPDATE: '/api/trips'
+        },
+        ACTIVITIES: {
+            GET: (tripId) => `/api/trip/activities/${tripId}`,
+            CREATE: '/api/activities',
+            UPDATE: '/api/activities'
+        },
+        GROUPS: {
+            ADD_USER: '/api/groups/user',
+            REMOVE_USER: '/api/groups/user',
+            LEAVE: '/api/groups/leave',
+            GET_PARTICIPANTS: (tripId) => `/api/groups/group/${tripId}`
+        },
+        SETTINGS: {
+            ALL: '/api/settings',
+            GET: (option) => `/api/settings/${option}`,
+            UPDATE: '/api/user/config'
         }
     },
     
