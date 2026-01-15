@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urlaubsplaner - E-Mail Verifizierung</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="modern-background">
+    <!-- Navigationsleiste oben-->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-5 sticky-top"
+        style="box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">Urlaubsplaner</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Start</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="user_registration.html">Registrieren</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html">Login</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container fade-in-element card mb-3 jumbotron" style="max-width: 500px;">
+        <div class="card-header text-white mb-0 text-center h4">E-Mail Verifizierung</div>
+        <div class="card-body p-4">
+
+            <!-- Verifizierungscode Anzeige (falls vorhanden) -->
+            <div id="code-container" class="alert alert-info mb-4" style="display: none;">
+                <h5 class="alert-heading">Dein Verifizierungscode:</h5>
+                <p class="display-6 text-center fw-bold mb-0" id="code-display"></p>
+                <hr>
+                <small>Kopiere diesen Code und gib ihn unten ein.</small>
+            </div>
+
+            <!-- Verifizierungsformular -->
+            <form id="verifyForm" onsubmit="return verifyUser(event)">
+
+                <div class="form-group mb-3">
+                    <label for="verify-email" class="form-label fw-bold">E-Mail-Adresse</label>
+                    <input type="email" class="form-control" id="verify-email" placeholder="name@beispiel.de" required>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="verify-code" class="form-label fw-bold">Verifizierungscode</label>
+                    <input type="text" class="form-control" id="verify-code" placeholder="Code eingeben" required
+                        maxlength="8" style="text-transform: uppercase; letter-spacing: 2px; font-size: 1.2rem;">
+                    <small class="text-muted">Der Code wurde dir per E-Mail zugesendet (max. 8 Zeichen).</small>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">Verifizieren</button>
+                </div>
+
+            </form>
+        </div>
+        <div class="card-footer text-center text-muted">
+            Keinen Code erhalten? <a href="user_registration.html">Erneut registrieren</a>
+        </div>
+    </div>
+
+    <!--Fusszeile-->
+    <div class="footer-placeholder"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+    <script src="config.js"></script>
+    <script src="script_Effects.js"></script>
+    <script src="script_User.js"></script>
+    <script>
+        // Initialisiere Verifizierungsseite beim Laden
+        document.addEventListener('DOMContentLoaded', initVerifyPage);
+    </script>
+
+</body>
+
+</html>

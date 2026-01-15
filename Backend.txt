@@ -1,0 +1,109 @@
+Datentypen für Datenbank:
+auth.verification_code: VARCHAR(8)
+token.refresh_token: VARCHAR(36), evtl. Änderung zu gehashter Version
+
+
+
+Endpoints:
+    POST /auth/register
+        Input: Email, Password, Name + Personal Data
+        Logik: Check ob Email existiert -> Passwort hashen (bcrypt/argon2) -> DB Eintrag.
+    POST /auth/login
+        Input: Email, Password
+        Logik: User suchen -> Hash vergleichen -> JWT Token generieren & zurückgeben.
+    POST /auth/refresh
+        Input: Refresh Token via HTTP Body
+        Logik: Refresh Token wird in der Datenbank gesucht, bei validem Token wird ein neues Access Token für den hinterlegten Nutzer zurückgegeben
+    POST /auth/verify
+        Input: Email und Verifikationscode
+        Logik: Verifikationscode wird mit dem in der DB hinterlegten Code verglichen, bei Gleichheit wird der Nutzer auf gültig gesetzt. Ohne Verifizierung ist kein Einloggen möglich 
+ GET /api/user/info
+        Gibt die Nutzerdaten anhand des Access Tokens zurück
+        Input: Access Token
+        Logik: Bei validem Access Token werden die Profilinformationen zu dem im Token gespeicherten Nutzer zurückgegeben
+        Output: Felder siehe ERM, Übergabe in JSON
+    PATCH /api/user/info
+        Eigene Profildaten updaten, Zuordnung über Access Token
+        Input: siehe ERM, nur benötigte Felder ausfüllen
+        Logik: alle gefüllten Felder werden in der Datenbank überschrieben
+        Output: Bestätigungs- oder Fehlercode
+    POST /api/user/logout
+        Von diesem Gerät abmelden
+        Input: Auth_ID über Access Token im Header, Refresh Token im Body
+        Logik: Das gegebene Refresh Token wird, wenn es zum Nutzer mit der gegebenen Auth_ID gehört, aus der Token-Tabelle gelöscht.
+        Output: Fehlercode bei falscher Eingabe / nicht existentem Token
+    POST /api/user/logoutAll
+        Von allen Geräten abmelden
+        Input: Auth_ID über Access Token im Header
+        Logik: Alle Refresh Tokens in der Token-Tabelle, die auf die im Access Token gegebene Auth_ID verweisen, werden gelöscht. Der Nutzer wird dann auf allen Geräten             nach Ablauf des Access Tokens nicht mehr automatisch neu angemeldet.
+        Output: Fehlercode bei nicht existenten Tokens 
+
+
+POST /api/groups/user:
+        Hinzufügen eines Users zu einer Reise
+        erfordert trip_id und email des hinzuzufügenden Users
+        Berechtigung, Nutzer hinzuzufügen, wird über Access-Token geprüft
+        Gibt passenden HTTP-Code zurück
+    DELETE /api/groups/user:
+        Löscht einen Nutzer von der Reise
+        erfordert trip_id und email des zu entfernenden Users
+        Berechtigung der Transaktion wird über Access-Token geprüft
+        Gibt passenden HTTP-Code zurück
+    POST /api/groups/leave:
+        erfordert trip_id
+        selbständiges Verlassen einer Gruppe, eigene Nutzer ID kommt aus Access Token
+        Gibt passenden HTTP-Code zurück
+    GET /api/groups/group/{trip_id}:
+        Gibt alle eingeladenen Personen als Liste zurück
+        erfordert trip_id
+        Berechtigung wird über Access-Token geprüft
+        Rückgabetyp: Liste von Nutzerobjekten (email, name, etc.)
+        Gibt passenden HTTP-Code zurück 
+GET /api/trips
+        Aufruf mit Access Tokens
+        Rückgabe: Kopfdaten aller Trips, die der Nutzer sehen kann
+GET /api/trips/owned
+        Aufruf mit Access Token
+        Rückgabe: Kopfdaten aller Trips, die der Nutzer selbst erstellt hat
+GET /api/trips/shared
+        Aufruf mit Access Token
+        Rückgabe: Kofpdaten aller Trips, die der Nutzer geteilt bekommen hat
+POST /api/trips
+       Hinzufügen einer Reise (Kopfdaten)
+       Eingabe: Kopfdaten der Reise, id wird automatisch vergeben
+       Rückgabe: id der neu angelegten Reise
+PATCH /api/trips
+        Ändern der Kopfdaten einer Reise
+        Eingabe: zu ändernde Kopfdaten der Reise + id der Reise
+        Rückgabe: http ok
+
+GET /api/trip/activities/{trip_id}
+        Gibt alle zu dieser Reise (trip_id) gehörenden Aktivitäten aus
+        Validierung, ob Reise von Nutzer angezeigt werden darf
+POST /api/activities
+        neue Aktivität zur Reise hinzufügen
+        Eingabe: Daten der Aktivität + ID der Reise
+        Validierung, ob Reise von Nutzer bearbeitet werden darf
+        Rückgabe: http ok
+PATCH /api/activities
+        Aktivität bearbeiten
+        Eingabe: zu ändernde Daten der Aktivität + ID der Aktivität
+        Validierung, ob Reise von Nutzer bearbeitet werden darf
+        Rückgabe: http ok 
+
+
+GET /api/settings
+Liest die User ID aus dem Access-Token
+Gibt eine Liste an Settings-Objekten zurück, die jeweils option und value enthalten
+GET /api/settings/{option}
+Liest die User ID aus dem Access Token
+Gibt eine UserConfig mit option und value zurück
+PATCH /api/user/config
+Liest die User ID aus dem Access-Token
+erfordert option und value im body
+führt einen upsert durch, wobei option und auth_id eindeutig sind
+Gibt passenden HTTP-Code zurück
+ 
+
+Die APIs sind unter folgender Adresse erreichbar:
+https://api.maz-nas-ma.synology.me:7039/

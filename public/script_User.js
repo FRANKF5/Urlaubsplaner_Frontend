@@ -338,7 +338,7 @@ async function updateSetting(option, value) {
 
 async function registerUser(event) {
     event.preventDefault();
-    
+
     const firstname = document.getElementById('firstname').value;
     const lastname = document.getElementById('lastname').value;
     const email = document.getElementById('email').value;
@@ -374,8 +374,15 @@ async function registerUser(event) {
         });
 
         if (response.status === 201) {
-            alert("Registrierung erfolgreich! Bitte überprüfe deine E-Mail zur Verifizierung.");
-            window.location.href = 'login.html';
+            const data = await response.json();
+            // Speichere E-Mail für Verifizierungsseite
+            localStorage.setItem('pendingVerificationEmail', email);
+            // Falls der Server einen Verifizierungscode zurückgibt, speichere ihn
+            if (data.verificationCode) {
+                localStorage.setItem('verificationCode', data.verificationCode);
+            }
+            // Weiterleitung zur Verifizierungsseite
+            window.location.href = 'verify.html';
         } else {
             alert("Registrierung fehlgeschlagen. Email möglicherweise bereits registriert.");
         }
@@ -384,6 +391,62 @@ async function registerUser(event) {
         alert("Fehler bei der Registrierung");
     }
     return false;
+}
+
+// E-Mail verifizieren
+async function verifyUser(event) {
+    event.preventDefault();
+
+    const email = document.getElementById('verify-email').value;
+    const code = document.getElementById('verify-code').value;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: email,
+                verificationCode: code
+            })
+        });
+
+        if (response.ok) {
+            // Lösche temporäre Daten
+            localStorage.removeItem('pendingVerificationEmail');
+            localStorage.removeItem('verificationCode');
+            alert("Verifizierung erfolgreich! Du kannst dich jetzt einloggen.");
+            window.location.href = 'login.html';
+        } else {
+            alert("Verifizierung fehlgeschlagen. Bitte prüfe den Code.");
+        }
+    } catch (error) {
+        console.error('Verification error:', error);
+        alert("Fehler bei der Verifizierung");
+    }
+    return false;
+}
+
+// Verifizierungsseite initialisieren
+function initVerifyPage() {
+    const emailField = document.getElementById('verify-email');
+    const codeDisplay = document.getElementById('code-display');
+
+    if (emailField) {
+        // E-Mail aus localStorage laden
+        const pendingEmail = localStorage.getItem('pendingVerificationEmail');
+        if (pendingEmail) {
+            emailField.value = pendingEmail;
+        }
+    }
+
+    if (codeDisplay) {
+        // Falls Verifizierungscode vorhanden, anzeigen
+        const code = localStorage.getItem('verificationCode');
+        if (code) {
+            codeDisplay.textContent = code;
+            codeDisplay.parentElement.style.display = 'block';
+        }
+    }
 }
 
 async function loginUser(event) {
