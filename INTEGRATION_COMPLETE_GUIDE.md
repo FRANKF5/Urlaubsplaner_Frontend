@@ -25,7 +25,7 @@ Your frontend is now fully integrated with the Spring Boot backend! Here's what 
 - ✅ View trip details
 
 ## 📋 **Step-by-Step Setup Instructions:**
-
+## taskkill /PID 23028 /F
 ### **Step 1: Start the Backend**
 ```bash
 cd "Backend-Code-main/uniprojekt"

@@ -1,7 +1,6 @@
 package com.urlaubsplaner.uniprojekt.bl;
 
 import java.security.Key;
-import java.util.Base64;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -23,7 +22,8 @@ public class JwtUtil {
 
     public JwtUtil(@Value("${jwt.secret}") String secret, @Value("${jwt.expiration}") long expiration) {
         
-        byte[] decodedKey = Base64.getDecoder().decode(secret);
+        //byte[] decodedKey = Base64.getDecoder().decode(secret);
+        byte[] decodedKey = Keys.secretKeyFor(io.jsonwebtoken.SignatureAlgorithm.HS256).getEncoded();
         this.key = Keys.hmacShaKeyFor(decodedKey);
         this.expiration = expiration;
 

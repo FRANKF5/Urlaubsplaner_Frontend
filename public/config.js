@@ -3,7 +3,7 @@
 
 const CONFIG = {
     // Backend Server URL
-    API_BASE_URL: 'http://localhost:8080',
+    API_BASE_URL: 'https://maz-nas-ma.synology.me:7039', //'http://localhost:8080',
     
     // API Endpoints
     ENDPOINTS: {
@@ -19,13 +19,13 @@ const CONFIG = {
             LOGOUT_ALL: '/api/user/logoutAll'
         },
         TRIP: {
-            LIST: '/api/trip',
-            CREATE: '/api/trip',
-            GET: (id) => `/api/trip/${id}`,
-            UPDATE: (id) => `/api/trip/${id}`,
-            DELETE: (id) => `/api/trip/${id}`,
-            PARTICIPANTS: (id) => `/api/trip/${id}/participant`,
-            EXPENSES: (id) => `/api/trip/${id}/expense`
+            LIST: '/api/trips',
+            CREATE: '/api/trips',
+            GET: (id) => `/api/trips/${id}`,
+            UPDATE: (id) => `/api/trips/${id}`,
+            DELETE: (id) => `/api/trips/${id}`,
+            PARTICIPANTS: (id) => `/api/trips/${id}/participant`,
+            EXPENSES: (id) => `/api/trips/${id}/expense`
         }
     },
     

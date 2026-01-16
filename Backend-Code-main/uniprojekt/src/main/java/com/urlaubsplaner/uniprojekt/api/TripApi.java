@@ -18,7 +18,7 @@ import com.urlaubsplaner.uniprojekt.database.TripConnector;
 import com.urlaubsplaner.uniprojekt.templates.Trip;
 
 @RestController
-@RequestMapping("/api/trip")
+@RequestMapping("/api/trips")
 public class TripApi {
 
     private final TripConnector tripConnector;
