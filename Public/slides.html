@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Präsentation - Urlaubsplaner</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden; /* Verhindert Scrollen während der Slides */
+        }
+        .presentation-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .iframe-container {
+            flex-grow: 1; /* Nimmt den restlichen Platz ein */
+            border: none;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .demo-bar {
+            padding: 15px;
+            background: #f8f9fa;
+            border-top: 2px solid #033c73; /* Nutzt deine Primärfarbe */
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="modern-background">
+
+    <div class="presentation-wrapper">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">🎓 Projekt-Präsentation: Urlaubsplaner</a>
+            </div>
+        </nav>
+
+        <div class="iframe-container">
+            <iframe 
+                src="https://docs.google.com/presentation/d/e/2PACX-1vRlBlgUD0wc20HP9QhQVgmD1EvP0Y0-0WFQLc-amClRSjM8O2fKEFKBV8JZjzsmjxmxbS8t_74GiOWQ/embed?start=false&loop=false&delayms=3000" 
+                allowfullscreen="true" 
+                mozallowfullscreen="true" 
+                webkitallowfullscreen="true">
+            </iframe>
+        </div>
+
+        <div class="demo-bar">
+            <p class="mb-2 d-none d-md-block text-muted">Klicken Sie auf den Button, um die Live-Anwendung zu starten.</p>
+            <a href="index.html" class="btn btn-primary btn-lg shadow">
+                🚀 Live-Demo starten
+            </a>
+        </div>
+    </div>
+
+    <script src="script_Effects.js"></script>
+</body>
+</html>
