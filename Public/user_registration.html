@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urlaubsplaner - Start</title>
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.3.8/cerulean/bootstrap.min.css">
+    -->
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body class="modern-background">
+    <!-- Navigationsleiste oben-->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-5 sticky-top"
+        style="box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">Urlaubsplaner</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Start</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="user_registration.html">Registrieren</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="profile.html">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-person-circle me-1" viewBox="0 0 16 16">
+                                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+                                <path fill-rule="evenodd"
+                                    d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1" />
+                            </svg>
+                            Mein Profil
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="container fade-in-element card mb-3 register-container jumbotron">
+        <div class="card-header text-white mb-0 text-center h4">Konto erstellen </div>
+        <div class="card-body p-4">
+
+            <!--Registrierungformular -->
+            <form id="registrationForm" onsubmit="return registerUser(event)">
+
+                <div class="form-group mb-3">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="firstname" class="form-label fw-bold">Vorname</label>
+                            <input type="text" class="form-control" id="firstname" placeholder="Max" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="lastname" class="form-label fw-bold">Nachname</label>
+                            <input type="text" class="form-control" id="lastname" placeholder="Mustermann" required>
+                        </div>
+                    </div>
+                    <label for="username" class="form-label fw-bold">Benutzername</label>
+                    <input type="text" class="form-control" id="username" placeholder="Dein Spitzname" required>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="email" class="form-label fw-bold">E-Mail-Adresse</label>
+                    <input type="email" class="form-control" id="email" placeholder="name@beispiel.de" required>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="birthdate" class="form-label fw-bold">Geburtsdatum</label>
+                    <input type="date" class="form-control" id="birthdate" required>
+                    <small class="text-muted">Bitte gib dein korrektes Geburtsdatum an.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="password" class="form-label fw-bold">Passwort</label>
+                        <input type="password" class="form-control" id="password" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="confirm_password" class="form-label fw-bold">Wiederholen</label>
+                        <input type="password" class="form-control" id="confirm_password" required>
+                        <small id="passwordError" class="text-danger" style="display:none;">Passwörter stimmen nicht
+                            überein!</small>
+                    </div>
+                </div>
+
+                <div class="form-check mb-4 mt-2">
+                    <input class="form-check-input" type="checkbox" value="" id="agbCheck" required>
+                    <label class="form-check-label" for="agbCheck">
+                        Ich bin kein Roboter
+                    </label>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">Jetzt Registrieren</button>
+                </div>
+
+            </form>
+        </div>
+        <div class="card-footer text-center text-muted">
+            Bereits ein Konto? <a href="login.html">Hier einloggen</a>
+        </div>
+
+    </div>
+
+    <!--Fußzeile: wird über .EventListener('DOMContentLoaded') aus footer.html geladen-->
+    <div class="footer-placeholder"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+    <script src="script_Effects.js"></script>
+    <script src="script_User.js"></script>
+
+</body>
+
+</html>
