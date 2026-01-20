@@ -11,7 +11,7 @@ const API_BASE_URL = 'https://maz-nas-ma.synology.me:7039';
 async function apiCall(endpoint, method = 'GET', body = null) {
     // 1. Token holen
     const token = localStorage.getItem('auth_token');
-    
+ 
     // DEBUG: Zeig mir in der Konsole (F12), was wir haben
     console.log("Sende Anfrage an:", endpoint);
     console.log("Mein gespeicherter Token:", token);
