@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konto bestätigen</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="modern-background">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-5 sticky-top">
+     <div class="container-fluid">
+     <a class="navbar-brand" href="index.html">Urlaubsplaner</a>
+     </div>
+    </nav>
+    <div class="container fade-in-element card register-container jumbotron">
+        <div class="card-header text-white mb-0 text-center h4">E-Mail bestätigen 📧</div>
+         <div class="card-body p-4">
+
+        <div class="alert alert-info">
+         Wir haben einen Code an deine E-Mail-Adresse gesendet. <br>
+        Bitte gib ihn unten ein, um dein Konto freizuschalten.
+         </div>
+        <form onsubmit="return verifyUser(event)">
+        <div class="mb-3">
+            <label class="form-label fw-bold">Deine E-Mail</label>
+                <input type="email" id="verify-email" class="form-control" required>
+            </div>
+        <div class="mb-3">
+        <label class="form-label fw-bold">Verifizierungscode</label>
+             <input type="text" id="verify-code" class="form-control" placeholder="z.B. X7Y2A" required>
+            </div>
+             <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-success btn-lg">Konto freischalten</button>
+            </div>
+             </form>
+         </div>
+    </div>
+     <script src="script_User.js"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+     const urlParams = new URLSearchParams(window.location.search);
+     const emailParam = urlParams.get('email');
+     if(emailParam) {
+     document.getElementById('verify-email').value = emailParam;
+     }
+     });
+     </script>
+</body>
+</html>
