@@ -12,6 +12,3 @@ async function fetchData(url) {
         console.error('Fetch error:', error);
     }
 }
-
-
-//Kommentar von Pablo
