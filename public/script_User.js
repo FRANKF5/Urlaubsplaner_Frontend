@@ -80,7 +80,7 @@ function calculateAge(birthdateString) {
 // --- 2. AUTHENTIFIZIERUNG ---
 
 async function registerUser(event) {
-    event.preventDefault();
+    event.preventDefault();
     const firstname = document.getElementById('firstname').value;
     const lastname = document.getElementById('lastname').value;
     const username = document.getElementById('username').value;
